@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-11-23
+
+### Added
+- **Automatic current calculation** for meters that don't provide current values
+  - Calculates current from power and voltage using I = P / U
+  - Applies to all three phases (L1, L2, L3)
+  - Only calculates if current values are missing but power and voltage are available
+  - Logged in debug mode: "Berechnet L1 Strom: X.XX A (aus XXX W / XXX V)"
+
+### Improved
+- Raw data logging in debug mode (first 200 characters)
+  - Helps troubleshooting meter compatibility issues
+  - Shows actual OBIS codes received from meter
+
+### Fixed
+- Current sensors showing "unknown" when meter doesn't provide current measurements
+  - Many easyMeter and similar models only provide power and voltage
+  - Calculated values now appear as proper sensor readings
+
 ## [1.2.4] - 2025-11-23
 
 ### Security
@@ -188,6 +207,7 @@ This update enables:
 - Configurable poll interval
 - Adjustable log level
 
+[1.3.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.3.0
 [1.2.4]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.4
 [1.2.3]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.3
 [1.2.2]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.2

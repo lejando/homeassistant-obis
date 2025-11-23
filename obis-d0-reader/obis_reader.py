@@ -92,6 +92,11 @@ class OBISReader:
         """Parst D0-Protokoll Nachrichten"""
         try:
             text = data.decode('ascii', errors='ignore')
+
+            # Log Rohdaten im Debug-Modus
+            if self.logger.level == logging.DEBUG:
+                self.logger.debug(f"Rohdaten: {text[:200]}...")  # Erste 200 Zeichen
+
             values = {}
 
             # D0 Format: 1-0:1.8.0*255(000012345.6789*kWh)
@@ -109,11 +114,36 @@ class OBISReader:
                     # Falls keine numerischer Wert (z.B. Seriennummer)
                     values[code] = value
 
+            # Berechne Ströme falls nicht vorhanden (I = P / U)
+            self._calculate_missing_currents(values)
+
             return values
 
         except Exception as e:
             self.logger.error(f"Fehler beim Parsen der D0-Nachricht: {e}")
             return {}
+
+    def _calculate_missing_currents(self, values: Dict[str, str]):
+        """Berechnet fehlende Strom-Werte aus Leistung und Spannung (I = P / U)"""
+        phases = [
+            ('1-0:31.7.0*255', '1-0:36.7.0*255', '1-0:32.7.0*255', 'L1'),  # current, power, voltage
+            ('1-0:51.7.0*255', '1-0:56.7.0*255', '1-0:52.7.0*255', 'L2'),
+            ('1-0:71.7.0*255', '1-0:76.7.0*255', '1-0:72.7.0*255', 'L3'),
+        ]
+
+        for current_code, power_code, voltage_code, phase in phases:
+            # Nur berechnen wenn Strom fehlt, aber Leistung und Spannung vorhanden sind
+            if current_code not in values and power_code in values and voltage_code in values:
+                try:
+                    power = float(values[power_code])  # in W
+                    voltage = float(values[voltage_code])  # in V
+
+                    if voltage > 0:
+                        current = power / voltage  # I = P / U
+                        values[current_code] = f"{current:.2f}"
+                        self.logger.debug(f"Berechnet {phase} Strom: {current:.2f} A (aus {power:.2f} W / {voltage:.1f} V)")
+                except (ValueError, ZeroDivisionError) as e:
+                    self.logger.debug(f"Konnte Strom für {phase} nicht berechnen: {e}")
 
     def connect_tcp(self) -> Optional[socket.socket]:
         """Verbindet zu ser2net via TCP"""
