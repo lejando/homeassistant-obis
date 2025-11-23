@@ -45,13 +45,12 @@ schema:
   mqtt_enabled: bool
   mqtt_host: str
   mqtt_port: int
-  mqtt_user: str
-  mqtt_password: password
+  mqtt_user: str?
+  mqtt_password: password?
   mqtt_base_topic: str
   mqtt_discovery: bool
   mqtt_discovery_prefix: str
   mqtt_topic_mode: list(auto|custom)
-  mqtt_custom_topics: "dict(str,str)?"
   meter_name: str
   poll_interval: int(1,60)
   log_level: list(debug|info|warning|error)
