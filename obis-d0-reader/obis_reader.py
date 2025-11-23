@@ -209,19 +209,19 @@ class OBISReader:
         except Exception as e:
             self.logger.error(f"MQTT-Verbindung fehlgeschlagen: {e}")
 
-    def _on_mqtt_connect(self, client, userdata, flags, rc):
-        """MQTT Connect Callback"""
-        if rc == 0:
+    def _on_mqtt_connect(self, client, userdata, flags, reason_code, properties):
+        """MQTT Connect Callback (VERSION2)"""
+        if reason_code == 0:
             self.logger.info("MQTT-Verbindung erfolgreich")
             self.connected = True
             if self.config.mqtt_discovery:
                 self.publish_discovery()
         else:
-            self.logger.error(f"MQTT-Verbindung fehlgeschlagen mit Code {rc}")
+            self.logger.error(f"MQTT-Verbindung fehlgeschlagen mit Code {reason_code}")
 
-    def _on_mqtt_disconnect(self, client, userdata, rc):
-        """MQTT Disconnect Callback"""
-        self.logger.warning("MQTT-Verbindung getrennt")
+    def _on_mqtt_disconnect(self, client, userdata, disconnect_flags, reason_code, properties):
+        """MQTT Disconnect Callback (VERSION2)"""
+        self.logger.warning(f"MQTT-Verbindung getrennt (Code: {reason_code})")
         self.connected = False
 
     def setup_openwb_mqtt(self):
@@ -249,17 +249,17 @@ class OBISReader:
         except Exception as e:
             self.logger.error(f"openWB MQTT-Verbindung fehlgeschlagen: {e}")
 
-    def _on_openwb_connect(self, client, userdata, flags, rc):
-        """openWB MQTT Connect Callback"""
-        if rc == 0:
+    def _on_openwb_connect(self, client, userdata, flags, reason_code, properties):
+        """openWB MQTT Connect Callback (VERSION2)"""
+        if reason_code == 0:
             self.logger.info("openWB MQTT-Verbindung erfolgreich")
             self.openwb_connected = True
         else:
-            self.logger.error(f"openWB MQTT-Verbindung fehlgeschlagen mit Code {rc}")
+            self.logger.error(f"openWB MQTT-Verbindung fehlgeschlagen mit Code {reason_code}")
 
-    def _on_openwb_disconnect(self, client, userdata, rc):
-        """openWB MQTT Disconnect Callback"""
-        self.logger.warning("openWB MQTT-Verbindung getrennt")
+    def _on_openwb_disconnect(self, client, userdata, disconnect_flags, reason_code, properties):
+        """openWB MQTT Disconnect Callback (VERSION2)"""
+        self.logger.warning(f"openWB MQTT-Verbindung getrennt (Code: {reason_code})")
         self.openwb_connected = False
 
     def publish_discovery(self):

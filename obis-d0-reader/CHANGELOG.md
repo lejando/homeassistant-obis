@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2025-11-23
+
+### Fixed
+- MQTT Callback API VERSION2 compatibility
+  - Fixed callback signatures for on_connect and on_disconnect
+  - Changed from (client, userdata, flags, rc) to (client, userdata, flags, reason_code, properties)
+  - Fixed TypeError: "takes 5 positional arguments but 6 were given"
+  - Applies to both Home Assistant and openWB MQTT clients
+
 ## [1.3.0] - 2025-11-23
 
 ### Added
@@ -207,6 +216,7 @@ This update enables:
 - Configurable poll interval
 - Adjustable log level
 
+[1.3.1]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.3.1
 [1.3.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.3.0
 [1.2.4]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.4
 [1.2.3]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.3
