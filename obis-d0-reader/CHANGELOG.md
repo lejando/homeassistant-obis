@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-11-23
+
+### Added
+- Complete English translation of all documentation
+- Comprehensive configuration documentation (DOCS.md)
+  - Detailed parameter explanations with examples
+  - Configuration examples for different use cases
+  - Troubleshooting guide for common issues
+  - Best practices and recommendations
+- Extensive inline comments in config.yaml
+  - Clear descriptions for each parameter
+  - Practical examples and default values
+  - How to find/test each value
+- Release process documentation (.dev/RELEASE_PROCESS.md)
+  - How Home Assistant detects updates
+  - Step-by-step release workflow
+  - Versioning best practices
+
+### Changed
+- All documentation now in English (README.md, INSTALL.md, etc.)
+- Improved configuration UI experience in Home Assistant
+- Enhanced user guidance for setup and configuration
+
+### Documentation
+- README.md: Fully translated to English
+- INSTALL.md: Complete step-by-step guide in English
+- repository.yaml: English descriptions
+- obis-d0-reader/README.md: English add-on documentation
+- obis-d0-reader/CHANGELOG.md: English changelog
+- obis-d0-reader/DOCS.md: New comprehensive configuration guide
+- obis-d0-reader/config.yaml: Enhanced with detailed comments
+
 ## [1.0.0] - 2025-11-23
 
 ### Added
@@ -49,4 +81,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configurable poll interval
 - Adjustable log level
 
+[1.1.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.1.0
 [1.0.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.0.0

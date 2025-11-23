@@ -1,5 +1,5 @@
 name: "OBIS D0 Reader"
-version: "1.0.0"
+version: "1.1.0"
 slug: obis_d0_reader
 description: "Reads OBIS D0 electricity meters via ser2net and sends data to MQTT"
 arch:
