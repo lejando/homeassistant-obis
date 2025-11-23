@@ -1,99 +1,99 @@
-# OBIS D0 Reader Add-on für Home Assistant
+# OBIS D0 Reader Add-on for Home Assistant
 
-Liest Stromzähler mit OBIS D0-Protokoll via ser2net und sendet die Daten an MQTT mit Home Assistant Auto-Discovery.
+Reads electricity meters with OBIS D0 protocol via ser2net and sends data to MQTT with Home Assistant Auto-Discovery.
 
-## Über dieses Add-on
+## About this Add-on
 
-Dieses Add-on verbindet sich mit einem OBIS D0-Stromzähler über TCP (ser2net) und publiziert alle Messwerte automatisch an Home Assistant via MQTT. Es unterstützt:
+This add-on connects to an OBIS D0 electricity meter via TCP (ser2net) and publishes all measurement values automatically to Home Assistant via MQTT. It supports:
 
-- ✅ **D0-Protokoll** (ASCII-basiert) - Kompatibel mit vielen deutschen Stromzählern
-- ✅ **TCP-Verbindung** - Funktioniert mit ser2net auf Raspberry Pi oder anderen Systemen
-- ✅ **MQTT Auto-Discovery** - Sensoren erscheinen automatisch in Home Assistant
-- ✅ **Konfigurierbare MQTT-Topics** - Flexibles Topic-Mapping
-- ✅ **Energy Dashboard Integration** - Alle Energiewerte sind kompatibel
-- ✅ **15+ Sensoren** - Energie, Leistung, Spannung, Strom pro Phase
+- ✅ **D0 Protocol** (ASCII-based) - Compatible with many German electricity meters
+- ✅ **TCP Connection** - Works with ser2net on Raspberry Pi or other systems
+- ✅ **MQTT Auto-Discovery** - Sensors appear automatically in Home Assistant
+- ✅ **Configurable MQTT Topics** - Flexible topic mapping
+- ✅ **Energy Dashboard Integration** - All energy values are compatible
+- ✅ **15+ Sensors** - Energy, power, voltage, current per phase
 
-## Unterstützte Messwerte
+## Supported Measurements
 
-Das Add-on erkennt und publiziert automatisch:
+The add-on automatically detects and publishes:
 
-### Energiezähler
-- **Gesamtbezug** (1-0:1.8.0*255) - Total Import in kWh
-- **Gesamteinspeisung** (1-0:2.8.0*255) - Total Export in kWh
+### Energy Meters
+- **Total Import** (1-0:1.8.0*255) - Total Import in kWh
+- **Total Export** (1-0:2.8.0*255) - Total Export in kWh
 
-### Leistung
-- **Gesamtleistung** (1-0:16.7.0*255) - Total Power in W
-- **Leistung Phase L1** (1-0:36.7.0*255)
-- **Leistung Phase L2** (1-0:56.7.0*255)
-- **Leistung Phase L3** (1-0:76.7.0*255)
+### Power
+- **Total Power** (1-0:16.7.0*255) - Total Power in W
+- **Power Phase L1** (1-0:36.7.0*255)
+- **Power Phase L2** (1-0:56.7.0*255)
+- **Power Phase L3** (1-0:76.7.0*255)
 
-### Spannung
-- **Spannung Phase L1** (1-0:32.7.0*255) in V
-- **Spannung Phase L2** (1-0:52.7.0*255) in V
-- **Spannung Phase L3** (1-0:72.7.0*255) in V
+### Voltage
+- **Voltage Phase L1** (1-0:32.7.0*255) in V
+- **Voltage Phase L2** (1-0:52.7.0*255) in V
+- **Voltage Phase L3** (1-0:72.7.0*255) in V
 
-### Strom
-- **Strom Phase L1** (1-0:31.7.0*255) in A
-- **Strom Phase L2** (1-0:51.7.0*255) in A
-- **Strom Phase L3** (1-0:71.7.0*255) in A
+### Current
+- **Current Phase L1** (1-0:31.7.0*255) in A
+- **Current Phase L2** (1-0:51.7.0*255) in A
+- **Current Phase L3** (1-0:71.7.0*255) in A
 
-### Weitere
-- **Frequenz** (1-0:14.7.0*255) in Hz
-- **Zähler-ID** (1-0:96.1.0*255)
-- **Gerätestatus** (1-0:96.5.0*255)
+### Other
+- **Frequency** (1-0:14.7.0*255) in Hz
+- **Meter ID** (1-0:96.1.0*255)
+- **Device Status** (1-0:96.5.0*255)
 
 ## Installation
 
-### 1. Add-on Repository hinzufügen
+### 1. Add Add-on Repository
 
-1. Öffnen Sie Home Assistant
-2. Navigieren Sie zu **Einstellungen** → **Add-ons** → **Add-on Store**
-3. Klicken Sie auf die **⋮** (drei Punkte) oben rechts
-4. Wählen Sie **Repositories**
-5. Fügen Sie diese URL hinzu:
+1. Open Home Assistant
+2. Navigate to **Settings** → **Add-ons** → **Add-on Store**
+3. Click on **⋮** (three dots) top right
+4. Select **Repositories**
+5. Add this URL:
    ```
    https://github.com/lejando/homeassistant-obis
    ```
 
-### 2. Add-on installieren
+### 2. Install Add-on
 
-1. Suchen Sie nach **"OBIS D0 Reader"** im Add-on Store
-2. Klicken Sie auf **Installieren**
-3. Warten Sie, bis die Installation abgeschlossen ist
+1. Search for **"OBIS D0 Reader"** in the Add-on Store
+2. Click on **Install**
+3. Wait for the installation to complete
 
-### 3. Konfiguration
+### 3. Configuration
 
-#### Basis-Konfiguration
+#### Basic Configuration
 
 ```yaml
-tcp_host: "192.168.1.100"  # IP des ser2net Servers
-tcp_port: 3000              # ser2net Port
+tcp_host: "192.168.1.100"  # IP of ser2net server
+tcp_port: 3000              # ser2net port
 
 mqtt_enabled: true
-mqtt_host: "core-mosquitto"  # MQTT Broker (Standard: Home Assistant Mosquitto)
+mqtt_host: "core-mosquitto"  # MQTT Broker (default: Home Assistant Mosquitto)
 mqtt_port: 1883
-mqtt_user: ""                # Optional: MQTT Benutzername
-mqtt_password: ""            # Optional: MQTT Passwort
+mqtt_user: ""                # Optional: MQTT username
+mqtt_password: ""            # Optional: MQTT password
 
 mqtt_base_topic: "homeassistant/sensor/obis"
 mqtt_discovery: true
 mqtt_discovery_prefix: "homeassistant"
 
 meter_name: "easyMeter"
-poll_interval: 2             # Abfrageintervall in Sekunden
+poll_interval: 2             # Poll interval in seconds
 
 log_level: "info"            # debug, info, warning, error
 ```
 
-#### Erweiterte MQTT-Konfiguration
+#### Advanced MQTT Configuration
 
-**Auto-Modus (Standard):**
+**Auto Mode (default):**
 ```yaml
 mqtt_topic_mode: "auto"
 ```
-Topics folgen dem Schema: `{mqtt_base_topic}/{sensor_name}/state`
+Topics follow the schema: `{mqtt_base_topic}/{sensor_name}/state`
 
-Beispiel:
+Example:
 - `homeassistant/sensor/obis/power_total/state`
 - `homeassistant/sensor/obis/total_energy_import/state`
 
@@ -101,39 +101,39 @@ Beispiel:
 ```yaml
 mqtt_topic_mode: "custom"
 mqtt_custom_topics:
-  "1-0:16.7.0*255": "energie/stromzaehler/leistung"
-  "1-0:1.8.0*255": "energie/stromzaehler/verbrauch"
+  "1-0:16.7.0*255": "energy/meter/power"
+  "1-0:1.8.0*255": "energy/meter/consumption"
   "power_total": "custom/power"
   "total_energy_import": "custom/energy"
 ```
 
-Sie können entweder OBIS-Codes oder Sensor-Namen als Keys verwenden.
+You can use either OBIS codes or sensor names as keys.
 
-### 4. Add-on starten
+### 4. Start Add-on
 
-1. Gehen Sie zum **Konfiguration** Tab des Add-ons
-2. Konfigurieren Sie die Einstellungen
-3. Speichern Sie die Konfiguration
-4. Klicken Sie auf **Start**
-5. Aktivieren Sie optional:
-   - ☑️ **Start on boot** - Auto-Start beim Neustart
-   - ☑️ **Watchdog** - Automatischer Neustart bei Absturz
+1. Go to the **Configuration** tab of the add-on
+2. Configure the settings
+3. Save the configuration
+4. Click on **Start**
+5. Optionally enable:
+   - ☑️ **Start on boot** - Auto-start on reboot
+   - ☑️ **Watchdog** - Automatic restart on crash
 
-### 5. Logs prüfen
+### 5. Check Logs
 
-Wechseln Sie zum **Log** Tab um zu sehen:
-- TCP-Verbindungsstatus
-- MQTT-Verbindungsstatus
-- Empfangene Messwerte
-- Eventuelle Fehler
+Switch to the **Log** tab to see:
+- TCP connection status
+- MQTT connection status
+- Received measurements
+- Any errors
 
-## Voraussetzungen
+## Prerequisites
 
-### ser2net auf dem Raspberry Pi
+### ser2net on Raspberry Pi
 
-Ihr Raspberry Pi mit dem IR-Lesekopf benötigt ser2net:
+Your Raspberry Pi with the IR read head requires ser2net:
 
-**ser2net 4.x Konfiguration** (`/etc/ser2net/ser2net.yaml`):
+**ser2net 4.x configuration** (`/etc/ser2net/ser2net.yaml`):
 ```yaml
 connection: &easyMeter
   accepter: tcp,3000
@@ -146,90 +146,90 @@ connection: &easyMeter
              9600e71,local
 ```
 
-**ser2net 3.x Konfiguration** (`/etc/ser2net.conf`):
+**ser2net 3.x configuration** (`/etc/ser2net.conf`):
 ```
 3000:raw:600:/dev/ttyUSB0:9600 EVEN 7DATABITS 1STOPBIT XONXOFF LOCAL -RTSCTS
 ```
 
-**ser2net neu starten:**
+**Restart ser2net:**
 ```bash
 sudo systemctl restart ser2net
 ```
 
 ### MQTT Broker
 
-Sie benötigen einen MQTT Broker. Am einfachsten:
+You need an MQTT broker. The easiest way:
 
-1. Installieren Sie das **Mosquitto broker** Add-on
-2. Starten Sie es
-3. Verwenden Sie `core-mosquitto` als `mqtt_host`
+1. Install the **Mosquitto broker** add-on
+2. Start it
+3. Use `core-mosquitto` as `mqtt_host`
 
 ## Home Assistant Integration
 
-### Automatische Discovery
+### Automatic Discovery
 
-Bei aktivierter Auto-Discovery (`mqtt_discovery: true`) erscheinen die Sensoren automatisch unter:
+With auto-discovery enabled (`mqtt_discovery: true`), sensors appear automatically under:
 
-**Einstellungen** → **Geräte & Dienste** → **MQTT** → Gerät: **{meter_name}**
+**Settings** → **Devices & Services** → **MQTT** → Device: **{meter_name}**
 
 ### Energy Dashboard
 
-Die Energiezähler können direkt im Energy Dashboard verwendet werden:
+The energy meters can be used directly in the Energy Dashboard:
 
-1. **Einstellungen** → **Dashboards** → **Energie**
-2. **Stromnetz** → **Netzverbrauch hinzufügen**
-3. Wählen Sie: `sensor.easymeter_total_energy_import`
-4. Optional: **Rücklieferung** → `sensor.easymeter_total_energy_export`
+1. **Settings** → **Dashboards** → **Energy**
+2. **Grid consumption** → **Add consumption**
+3. Select: `sensor.easymeter_total_energy_import`
+4. Optional: **Return to grid** → `sensor.easymeter_total_energy_export`
 
-### Manuelle Sensor-Konfiguration
+### Manual Sensor Configuration
 
-Falls Auto-Discovery nicht funktioniert, können Sie Sensoren manuell in `configuration.yaml` definieren:
+If auto-discovery doesn't work, you can manually define sensors in `configuration.yaml`:
 
 ```yaml
 mqtt:
   sensor:
-    - name: "Stromzähler Gesamtleistung"
+    - name: "Meter Total Power"
       state_topic: "homeassistant/sensor/obis/power_total/state"
       unit_of_measurement: "W"
       device_class: power
       state_class: measurement
 
-    - name: "Stromzähler Gesamtverbrauch"
+    - name: "Meter Total Consumption"
       state_topic: "homeassistant/sensor/obis/total_energy_import/state"
       unit_of_measurement: "kWh"
       device_class: energy
       state_class: total_increasing
 ```
 
-## Erweiterte Nutzung
+## Advanced Usage
 
-### Custom MQTT-Topics für externe Systeme
+### Custom MQTT Topics for External Systems
 
-Sie können das Add-on nutzen, um Daten an andere MQTT-Clients zu senden:
+You can use the add-on to send data to other MQTT clients:
 
 ```yaml
 mqtt_topic_mode: "custom"
 mqtt_custom_topics:
-  # Sende an Node-RED
+  # Send to Node-RED
   "1-0:16.7.0*255": "nodered/power/current"
 
-  # Sende an Grafana
+  # Send to Grafana
   "total_energy_import": "metrics/energy/import"
   "total_energy_export": "metrics/energy/export"
 
-  # Sende an ioBroker
+  # Send to ioBroker
   "power_l1": "iobroker/energy/phase1"
   "power_l2": "iobroker/energy/phase2"
   "power_l3": "iobroker/energy/phase3"
 ```
 
-### Alle Werte als JSON
+### All Values as JSON
 
-Das Add-on publiziert zusätzlich alle Werte als JSON-Objekt:
+The add-on additionally publishes all values as a JSON object:
 
 **Topic:** `{mqtt_base_topic}/all`
 
-**Payload Beispiel:**
+**Payload Example:**
 ```json
 {
   "power_total": "1234.56",
@@ -244,94 +244,94 @@ Das Add-on publiziert zusätzlich alle Werte als JSON-Objekt:
 }
 ```
 
-## Fehlerbehebung
+## Troubleshooting
 
-### Keine Daten empfangen
+### No Data Received
 
-1. **Prüfen Sie die TCP-Verbindung:**
+1. **Check TCP connection:**
    ```bash
    telnet 192.168.1.100 3000
    ```
-   Sie sollten Daten vom Zähler sehen.
+   You should see data from the meter.
 
-2. **Prüfen Sie ser2net auf dem Pi:**
+2. **Check ser2net on the Pi:**
    ```bash
    sudo systemctl status ser2net
    sudo netstat -tulpn | grep 3000
    ```
 
-3. **Prüfen Sie den USB-Lesekopf:**
+3. **Check USB read head:**
    ```bash
    ls -la /dev/ttyUSB*
    sudo cat /dev/ttyUSB0
    ```
 
-### MQTT-Verbindung fehlgeschlagen
+### MQTT Connection Failed
 
-1. **Prüfen Sie Mosquitto:**
-   - Ist das Mosquitto Add-on installiert und gestartet?
-   - Einstellungen → Add-ons → Mosquitto broker
+1. **Check Mosquitto:**
+   - Is the Mosquitto add-on installed and running?
+   - Settings → Add-ons → Mosquitto broker
 
-2. **Prüfen Sie MQTT-Credentials:**
-   - Falls Sie Authentifizierung nutzen, sind User/Password korrekt?
+2. **Check MQTT credentials:**
+   - If you use authentication, are user/password correct?
 
-3. **Logs prüfen:**
-   - Add-on → Log Tab
-   - Suchen Sie nach "MQTT" Fehlermeldungen
+3. **Check logs:**
+   - Add-on → Log tab
+   - Look for "MQTT" error messages
 
-### Sensoren erscheinen nicht
+### Sensors Not Appearing
 
-1. **Prüfen Sie MQTT Integration:**
-   - Einstellungen → Geräte & Dienste → MQTT
-   - Ist MQTT konfiguriert?
+1. **Check MQTT integration:**
+   - Settings → Devices & Services → MQTT
+   - Is MQTT configured?
 
-2. **Manuelle Discovery:**
-   - Einstellungen → Geräte & Dienste → MQTT
-   - Klicken Sie auf "Configure"
-   - Prüfen Sie "Discovered entities"
+2. **Manual discovery:**
+   - Settings → Devices & Services → MQTT
+   - Click on "Configure"
+   - Check "Discovered entities"
 
-3. **Logs prüfen:**
-   - Suchen Sie nach "Discovery publiziert"
+3. **Check logs:**
+   - Look for "Discovery published"
 
-## Sensor-Namen und OBIS-Codes
+## Sensor Names and OBIS Codes
 
-| Sensor Name | OBIS-Code | Beschreibung | Einheit |
-|-------------|-----------|--------------|---------|
-| `device_id` | 1-0:0.0.0*255 | Geräte-ID | - |
-| `meter_id` | 1-0:96.1.0*255 | Zähler-ID | - |
-| `total_energy_import` | 1-0:1.8.0*255 | Gesamtbezug | kWh |
-| `total_energy_export` | 1-0:2.8.0*255 | Gesamteinspeisung | kWh |
-| `power_total` | 1-0:16.7.0*255 | Gesamtleistung | W |
-| `power_l1` | 1-0:36.7.0*255 | Leistung Phase 1 | W |
-| `power_l2` | 1-0:56.7.0*255 | Leistung Phase 2 | W |
-| `power_l3` | 1-0:76.7.0*255 | Leistung Phase 3 | W |
-| `voltage_l1` | 1-0:32.7.0*255 | Spannung Phase 1 | V |
-| `voltage_l2` | 1-0:52.7.0*255 | Spannung Phase 2 | V |
-| `voltage_l3` | 1-0:72.7.0*255 | Spannung Phase 3 | V |
-| `current_l1` | 1-0:31.7.0*255 | Strom Phase 1 | A |
-| `current_l2` | 1-0:51.7.0*255 | Strom Phase 2 | A |
-| `current_l3` | 1-0:71.7.0*255 | Strom Phase 3 | A |
-| `frequency` | 1-0:14.7.0*255 | Netzfrequenz | Hz |
-| `device_status` | 1-0:96.5.0*255 | Gerätestatus | - |
-| `operating_time` | 0-0:96.8.0*255 | Betriebszeit | - |
+| Sensor Name | OBIS Code | Description | Unit |
+|-------------|-----------|-------------|------|
+| `device_id` | 1-0:0.0.0*255 | Device ID | - |
+| `meter_id` | 1-0:96.1.0*255 | Meter ID | - |
+| `total_energy_import` | 1-0:1.8.0*255 | Total Import | kWh |
+| `total_energy_export` | 1-0:2.8.0*255 | Total Export | kWh |
+| `power_total` | 1-0:16.7.0*255 | Total Power | W |
+| `power_l1` | 1-0:36.7.0*255 | Power Phase 1 | W |
+| `power_l2` | 1-0:56.7.0*255 | Power Phase 2 | W |
+| `power_l3` | 1-0:76.7.0*255 | Power Phase 3 | W |
+| `voltage_l1` | 1-0:32.7.0*255 | Voltage Phase 1 | V |
+| `voltage_l2` | 1-0:52.7.0*255 | Voltage Phase 2 | V |
+| `voltage_l3` | 1-0:72.7.0*255 | Voltage Phase 3 | V |
+| `current_l1` | 1-0:31.7.0*255 | Current Phase 1 | A |
+| `current_l2` | 1-0:51.7.0*255 | Current Phase 2 | A |
+| `current_l3` | 1-0:71.7.0*255 | Current Phase 3 | A |
+| `frequency` | 1-0:14.7.0*255 | Grid Frequency | Hz |
+| `device_status` | 1-0:96.5.0*255 | Device Status | - |
+| `operating_time` | 0-0:96.8.0*255 | Operating Time | - |
 
 ## Support
 
-Bei Problemen oder Fragen:
+For problems or questions:
 
-1. Prüfen Sie die **Logs** des Add-ons
-2. Prüfen Sie die **ser2net Konfiguration** auf dem Pi
-3. Öffnen Sie ein Issue auf GitHub
+1. Check the **logs** of the add-on
+2. Check the **ser2net configuration** on the Pi
+3. Open an issue on GitHub
 
-## Lizenz
+## License
 
 MIT License
 
 ## Changelog
 
 ### Version 1.0.0
-- Initiale Version
-- D0-Protokoll Support
+- Initial release
+- D0 protocol support
 - MQTT Auto-Discovery
-- Konfigurierbare Custom Topics
-- 15+ OBIS-Codes unterstützt
+- Configurable custom topics
+- 15+ OBIS codes supported

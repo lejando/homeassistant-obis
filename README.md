@@ -2,56 +2,56 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Home Assistant Add-on zum Auslesen von OBIS D0-Stromzählern via ser2net mit MQTT-Integration.
+Home Assistant Add-on for reading OBIS D0 electricity meters via ser2net with MQTT integration.
 
 ## 🎯 Features
 
-- ✅ **D0-Protokoll Support** - Kompatibel mit vielen deutschen Stromzählern (EasyMeter, EBZ, etc.)
-- ✅ **TCP/IP Verbindung** - Funktioniert mit ser2net auf Raspberry Pi oder anderen Systemen
-- ✅ **MQTT Auto-Discovery** - Sensoren erscheinen automatisch in Home Assistant
-- ✅ **Konfigurierbare MQTT-Topics** - Flexibles Topic-Mapping für externe Systeme
-- ✅ **Energy Dashboard Ready** - Direkte Integration in HA Energy Dashboard
-- ✅ **15+ Sensoren** - Energie, Leistung, Spannung, Strom pro Phase
-- ✅ **Keine Hardware-Änderungen** - Nutzt bestehende ser2net-Installation
+- ✅ **D0 Protocol Support** - Compatible with many German electricity meters (EasyMeter, EBZ, etc.)
+- ✅ **TCP/IP Connection** - Works with ser2net on Raspberry Pi or other systems
+- ✅ **MQTT Auto-Discovery** - Sensors appear automatically in Home Assistant
+- ✅ **Configurable MQTT Topics** - Flexible topic mapping for external systems
+- ✅ **Energy Dashboard Ready** - Direct integration into HA Energy Dashboard
+- ✅ **15+ Sensors** - Energy, power, voltage, current per phase
+- ✅ **No Hardware Modifications** - Uses existing ser2net installation
 
-## 📊 Unterstützte Messwerte
+## 📊 Supported Measurements
 
-Das Add-on liest automatisch alle verfügbaren OBIS-Codes aus:
+The add-on automatically reads all available OBIS codes:
 
-### Energiezähler
-- Gesamtbezug (kWh)
-- Gesamteinspeisung (kWh)
+### Energy Meters
+- Total Import (kWh)
+- Total Export (kWh)
 
-### Leistung
-- Gesamtleistung (W)
-- Leistung pro Phase L1, L2, L3 (W)
+### Power
+- Total Power (W)
+- Power per phase L1, L2, L3 (W)
 
-### Elektrische Parameter
-- Spannung pro Phase (V)
-- Strom pro Phase (A)
-- Netzfrequenz (Hz)
+### Electrical Parameters
+- Voltage per phase (V)
+- Current per phase (A)
+- Grid frequency (Hz)
 
-### Geräteinformationen
-- Zähler-ID / Seriennummer
-- Gerätestatus
-- Betriebszeit
+### Device Information
+- Meter ID / Serial number
+- Device status
+- Operating time
 
-## 🚀 Schnellstart
+## 🚀 Quick Start
 
 ### 1. Installation
 
-Fügen Sie dieses Repository zu Ihren Home Assistant Add-on Repositories hinzu:
+Add this repository to your Home Assistant add-on repositories:
 
-1. **Einstellungen** → **Add-ons** → **Add-on Store**
-2. Klicken Sie auf **⋮** (drei Punkte) → **Repositories**
-3. Fügen Sie hinzu: `https://github.com/lejando/homeassistant-obis`
-4. Suchen Sie nach **"OBIS D0 Reader"** und installieren Sie es
+1. **Settings** → **Add-ons** → **Add-on Store**
+2. Click on **⋮** (three dots) → **Repositories**
+3. Add: `https://github.com/lejando/homeassistant-obis`
+4. Search for **"OBIS D0 Reader"** and install it
 
-### 2. Konfiguration
+### 2. Configuration
 
 ```yaml
-tcp_host: "192.168.1.100"    # IP Ihres ser2net Servers
-tcp_port: 3000               # ser2net Port
+tcp_host: "192.168.1.100"    # IP of your ser2net server
+tcp_port: 3000               # ser2net port
 
 mqtt_enabled: true
 mqtt_host: "core-mosquitto"  # MQTT Broker
@@ -61,25 +61,25 @@ meter_name: "easyMeter"
 poll_interval: 2
 ```
 
-### 3. Starten
+### 3. Start
 
-1. Speichern Sie die Konfiguration
-2. Starten Sie das Add-on
-3. Prüfen Sie die Logs
-4. Sensoren erscheinen automatisch unter **Geräte & Dienste** → **MQTT**
+1. Save the configuration
+2. Start the add-on
+3. Check the logs
+4. Sensors appear automatically under **Devices & Services** → **MQTT**
 
-## 🔧 Voraussetzungen
+## 🔧 Prerequisites
 
-### ser2net auf Raspberry Pi
+### ser2net on Raspberry Pi
 
-Ihr Raspberry Pi mit IR-Lesekopf benötigt ser2net:
+Your Raspberry Pi with IR read head requires ser2net:
 
 **Installation:**
 ```bash
 sudo apt install ser2net
 ```
 
-**Konfiguration** (`/etc/ser2net/ser2net.yaml`):
+**Configuration** (`/etc/ser2net/ser2net.yaml`):
 ```yaml
 connection: &easyMeter
   accepter: tcp,3000
@@ -90,21 +90,21 @@ connection: &easyMeter
   connector: serialdev,/dev/ttyUSB0,9600e71,local
 ```
 
-**Neustart:**
+**Restart:**
 ```bash
 sudo systemctl restart ser2net
 ```
 
 ### MQTT Broker
 
-Installieren Sie das **Mosquitto broker** Add-on aus dem Home Assistant Add-on Store.
+Install the **Mosquitto broker** add-on from the Home Assistant Add-on Store.
 
-## 📖 Architektur
+## 📖 Architecture
 
 ```
-OBIS-Stromzähler (D0-Protokoll)
+OBIS Electricity Meter (D0 Protocol)
          ↓
-    IR-Lesekopf
+    IR Read Head
          ↓
   Raspberry Pi
   /dev/ttyUSB0
@@ -112,7 +112,7 @@ OBIS-Stromzähler (D0-Protokoll)
          ↓
    ser2net (Port 3000)
          ↓
-   [TCP/IP-Netzwerk]
+   [TCP/IP Network]
          ↓
  Home Assistant OS (VM)
    OBIS D0 Reader Add-on
@@ -121,131 +121,131 @@ OBIS-Stromzähler (D0-Protokoll)
          ↓
   Home Assistant
   - Energy Dashboard
-  - 15+ Sensoren
-  - Automationen
+  - 15+ Sensors
+  - Automations
 ```
 
-## 🎛️ Erweiterte Konfiguration
+## 🎛️ Advanced Configuration
 
-### Custom MQTT-Topics
+### Custom MQTT Topics
 
-Senden Sie Daten an beliebige MQTT-Topics:
+Send data to custom MQTT topics:
 
 ```yaml
 mqtt_topic_mode: "custom"
 mqtt_custom_topics:
-  "1-0:16.7.0*255": "energie/stromzaehler/leistung"
-  "1-0:1.8.0*255": "energie/stromzaehler/verbrauch"
+  "1-0:16.7.0*255": "energy/meter/power"
+  "1-0:1.8.0*255": "energy/meter/consumption"
   "power_total": "nodered/power/current"
   "total_energy_import": "grafana/energy/import"
 ```
 
-### Externe Systeme
+### External Systems
 
-Das Add-on kann gleichzeitig Daten an mehrere Systeme senden:
+The add-on can simultaneously send data to multiple systems:
 
 - **Home Assistant** (via Auto-Discovery)
 - **Node-RED** (via custom topics)
 - **Grafana** (via custom topics)
 - **ioBroker** (via custom topics)
 
-Alle Werte werden zusätzlich als JSON publiziert unter: `{mqtt_base_topic}/all`
+All values are additionally published as JSON under: `{mqtt_base_topic}/all`
 
-## 📁 Repository-Struktur
+## 📁 Repository Structure
 
 ```
 homeassistant-obis/
-├── obis-d0-reader/          # Add-on Verzeichnis
-│   ├── config.yaml          # Add-on Konfiguration
-│   ├── Dockerfile           # Docker Image Definition
-│   ├── build.yaml           # Multi-Arch Build Config
-│   ├── run.sh              # Startup Script
-│   ├── obis_reader.py      # Python Hauptprogramm
-│   ├── requirements.txt    # Python Dependencies
-│   ├── README.md           # Add-on Dokumentation
-│   └── CHANGELOG.md        # Versionshistorie
-├── INSTALL.md              # Installations-Anleitung
-├── LICENSE                 # MIT Lizenz
-├── repository.yaml         # Add-on Repository Definition
-└── README.md               # Dieses README
+├── obis-d0-reader/          # Add-on directory
+│   ├── config.yaml          # Add-on configuration
+│   ├── Dockerfile           # Docker image definition
+│   ├── build.yaml           # Multi-arch build config
+│   ├── run.sh              # Startup script
+│   ├── obis_reader.py      # Python main program
+│   ├── requirements.txt    # Python dependencies
+│   ├── README.md           # Add-on documentation
+│   └── CHANGELOG.md        # Version history
+├── INSTALL.md              # Installation guide
+├── LICENSE                 # MIT License
+├── repository.yaml         # Add-on repository definition
+└── README.md               # This README
 ```
 
-## 🔧 Verbindung testen
+## 🔧 Testing the Connection
 
-### ser2net Verbindung prüfen
+### Check ser2net Connection
 
-Testen Sie die Verbindung zum ser2net Server:
+Test the connection to the ser2net server:
 
 ```bash
-# Von einem beliebigen Rechner im Netzwerk
+# From any computer on the network
 telnet 192.168.1.100 3000
 ```
 
-Sie sollten ASCII-Text vom Stromzähler sehen (D0-Protokoll).
+You should see ASCII text from the electricity meter (D0 protocol).
 
-### Raspberry Pi Diagnose
+### Raspberry Pi Diagnostics
 
-Prüfen Sie Ihre ser2net-Installation auf dem Raspberry Pi:
+Check your ser2net installation on the Raspberry Pi:
 
 ```bash
-# Status prüfen
+# Check status
 sudo systemctl status ser2net
 
-# Port prüfen
+# Check port
 sudo netstat -tulpn | grep 3000
 
-# USB-Gerät prüfen
+# Check USB device
 ls -la /dev/ttyUSB*
 
-# Rohdaten testen
+# Test raw data
 sudo timeout 5 cat /dev/ttyUSB0 | xxd
 ```
 
-## 🐛 Fehlerbehebung
+## 🐛 Troubleshooting
 
-### Keine Verbindung zum ser2net
+### No Connection to ser2net
 
 ```bash
-# Auf dem Raspberry Pi
+# On the Raspberry Pi
 sudo systemctl status ser2net
 sudo netstat -tulpn | grep 3000
 
-# Von Home Assistant aus testen (IP durch Ihre ersetzen)
+# Test from Home Assistant (replace IP with yours)
 telnet 192.168.1.100 3000
 ```
 
-### Keine MQTT-Daten
+### No MQTT Data
 
-1. Prüfen Sie die Add-on Logs
-2. Prüfen Sie MQTT Integration: **Einstellungen** → **Geräte & Dienste** → **MQTT**
-3. Prüfen Sie Mosquitto Logs
+1. Check the add-on logs
+2. Check MQTT integration: **Settings** → **Devices & Services** → **MQTT**
+3. Check Mosquitto logs
 
-### Sensoren erscheinen nicht
+### Sensors Not Appearing
 
-1. Aktivieren Sie `mqtt_discovery: true`
-2. Prüfen Sie Discovery Messages: **Entwicklerwerkzeuge** → **MQTT** → Lauschen auf `homeassistant/#`
-3. Neustart des Add-ons
+1. Enable `mqtt_discovery: true`
+2. Check discovery messages: **Developer Tools** → **MQTT** → Listen to `homeassistant/#`
+3. Restart the add-on
 
-## 🤝 Beitragen
+## 🤝 Contributing
 
-Contributions sind willkommen! Bitte:
+Contributions are welcome! Please:
 
-1. Forken Sie das Repository
-2. Erstellen Sie einen Feature Branch
-3. Committen Sie Ihre Änderungen
-4. Pushen Sie zum Branch
-5. Öffnen Sie einen Pull Request
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a pull request
 
-## 📝 Lizenz
+## 📝 License
 
-MIT License - siehe [LICENSE](LICENSE) Datei
+MIT License - see [LICENSE](LICENSE) file
 
-## ✨ Danksagungen
+## ✨ Acknowledgments
 
 - Home Assistant Community
-- ser2net Projekt
+- ser2net Project
 - Paho MQTT Client
-- Alle Contributors
+- All Contributors
 
 ## 📧 Support
 
@@ -255,6 +255,6 @@ MIT License - siehe [LICENSE](LICENSE) Datei
 ## 🔗 Links
 
 - [Home Assistant](https://www.home-assistant.io/)
-- [ser2net Dokumentation](https://github.com/cminyard/ser2net)
-- [OBIS-Kennzahlen Wikipedia](https://de.wikipedia.org/wiki/OBIS-Kennzahlen)
-- [D0-Protokoll Spezifikation](https://wiki.volkszaehler.org/software/obis)
+- [ser2net Documentation](https://github.com/cminyard/ser2net)
+- [OBIS Codes Wikipedia](https://en.wikipedia.org/wiki/OBIS)
+- [D0 Protocol Specification](https://wiki.volkszaehler.org/software/obis)

@@ -1,7 +1,7 @@
 name: "OBIS D0 Reader"
 version: "1.0.0"
 slug: obis_d0_reader
-description: "Liest OBIS D0-Stromzähler via ser2net und sendet Daten an MQTT"
+description: "Reads OBIS D0 electricity meters via ser2net and sends data to MQTT"
 arch:
   - aarch64
   - amd64
@@ -14,29 +14,127 @@ boot: auto
 init: false
 
 options:
-  # ser2net Verbindung
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TCP/IP Connection Settings
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Configure the connection to your ser2net server (Raspberry Pi with IR head)
+
+  # IP address or hostname of your ser2net server
+  # Examples: "192.168.1.100", "raspberrypi.local"
+  # Find it: Run "hostname -I" on your Raspberry Pi
   tcp_host: "192.168.1.100"
+
+  # TCP port where ser2net is listening
+  # Default: 3000 (check your ser2net config: /etc/ser2net/ser2net.yaml)
+  # Test connection: telnet YOUR_IP 3000
   tcp_port: 3000
 
-  # MQTT Einstellungen
+  # ═══════════════════════════════════════════════════════════════════════════
+  # MQTT Broker Settings
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Configure connection to your MQTT broker for sending sensor data
+
+  # Enable/disable MQTT publishing
+  # Set to false only for testing TCP connection
   mqtt_enabled: true
+
+  # MQTT broker hostname or IP address
+  # Use "core-mosquitto" if you're using the Mosquitto add-on in Home Assistant
+  # Examples: "core-mosquitto", "192.168.1.50", "mqtt.example.com"
   mqtt_host: "core-mosquitto"
+
+  # MQTT broker port
+  # Default: 1883 (unencrypted), 8883 (SSL/TLS)
   mqtt_port: 1883
+
+  # MQTT username (leave empty if no authentication required)
+  # Default Mosquitto add-on doesn't require authentication
   mqtt_user: ""
+
+  # MQTT password (leave empty if no authentication required)
   mqtt_password: ""
+
+  # Base MQTT topic for all sensor data
+  # Format: {base_topic}/{sensor_name}/state
+  # Example: "homeassistant/sensor/obis/power_total/state"
   mqtt_base_topic: "homeassistant/sensor/obis"
+
+  # Enable MQTT Auto-Discovery for Home Assistant
+  # When enabled: Sensors automatically appear in HA without manual configuration
+  # Go to: Settings → Devices & Services → MQTT to see your meter
   mqtt_discovery: true
+
+  # MQTT Discovery prefix (must match Home Assistant MQTT integration)
+  # Default Home Assistant value: "homeassistant"
+  # Verify: Settings → Devices & Services → MQTT → Configure
   mqtt_discovery_prefix: "homeassistant"
 
-  # Erweiterte MQTT Topic-Konfiguration
-  mqtt_topic_mode: "auto"  # auto, custom
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Advanced MQTT Topic Configuration
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Configure how sensor data is published to MQTT topics
+
+  # Topic generation mode:
+  # - "auto": Automatic topic generation (recommended for Home Assistant)
+  #           Format: {mqtt_base_topic}/{sensor_name}/state
+  # - "custom": Define custom topics for each sensor (advanced users)
+  #           Use this for integration with Node-RED, Grafana, ioBroker, etc.
+  mqtt_topic_mode: "auto"
+
+  # Custom MQTT topic mappings (only used when mqtt_topic_mode: "custom")
+  # Format:
+  #   "source": "target/topic"
+  #
+  # Source can be OBIS code or sensor name:
+  #   "1-0:16.7.0*255": "energy/power/current"
+  #   "power_total": "nodered/power"
+  #
+  # Available sensor names:
+  #   device_id, meter_id, total_energy_import, total_energy_export,
+  #   power_total, power_l1, power_l2, power_l3,
+  #   voltage_l1, voltage_l2, voltage_l3,
+  #   current_l1, current_l2, current_l3,
+  #   frequency, device_status, operating_time
+  #
+  # Example for multi-system integration:
+  # mqtt_custom_topics:
+  #   "power_total": "nodered/energy/power"
+  #   "total_energy_import": "grafana/energy/import"
+  #   "voltage_l1": "monitoring/grid/voltage/phase1"
   mqtt_custom_topics: {}
 
-  # Zähler-Einstellungen
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Meter Settings
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # Friendly name for your electricity meter
+  # Used as device name in Home Assistant
+  # Sensor names will be: "{meter_name} Power Total", etc.
+  # Examples: "easyMeter", "MainMeter", "Basement_Meter"
   meter_name: "easyMeter"
+
+  # Polling interval in seconds (how often to read data from meter)
+  # Range: 1-60 seconds
+  # Recommended values:
+  #   2  = Real-time monitoring (best for power tracking)
+  #   5  = Balanced (good compromise)
+  #   10 = Reduced network traffic
+  #   30 = Minimal polling (energy totals only)
+  # Note: Energy Dashboard accuracy is not affected by polling interval
   poll_interval: 2
 
-  # Logging
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Logging Settings
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # Log verbosity level:
+  # - "debug": Most verbose, shows all operations, raw data, and details
+  #            Use for troubleshooting connection or parsing issues
+  # - "info": Normal operation, shows connections, updates, and errors
+  #           Recommended for daily use
+  # - "warning": Only warnings and errors
+  #              Use in production when system is stable
+  # - "error": Only errors and critical failures
   log_level: "info"
 
 schema:
@@ -58,4 +156,4 @@ schema:
 services:
   - mqtt:want
 
-# Image wird vom Build-System automatisch gesetzt, wenn build.yaml vorhanden ist
+# Image is automatically set by the build system when build.yaml is present

@@ -10,17 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 - Updated to paho-mqtt 2.x for future compatibility
-- D0-Protokoll Parser für OBIS-Stromzähler
-- TCP/IP Verbindung zu ser2net
-- MQTT Auto-Discovery für Home Assistant
-- Unterstützung für 15+ OBIS-Codes
-- Konfigurierbare MQTT-Topics (auto/custom Modus)
-- JSON-Export aller Werte
-- Energy Dashboard Integration
-- Multi-Architektur Support (amd64, aarch64, armv7, armhf, i386)
-- Umfangreiche Dokumentation
-- Protokoll-Erkennungs-Tool
-- Diagnose-Scripts für Raspberry Pi
+- D0 protocol parser for OBIS electricity meters
+- TCP/IP connection to ser2net
+- MQTT Auto-Discovery for Home Assistant
+- Support for 15+ OBIS codes
+- Configurable MQTT topics (auto/custom mode)
+- JSON export of all values
+- Energy Dashboard integration
+- Multi-architecture support (amd64, aarch64, armv7, armhf, i386)
+- Comprehensive documentation
+- Protocol detection tool
+- Diagnostic scripts for Raspberry Pi
 
 ### Supported OBIS Codes
 - 1-0:0.0.0*255 - Device ID

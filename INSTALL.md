@@ -1,18 +1,18 @@
-# Installationsanleitung - Schritt für Schritt
+# Installation Guide - Step by Step
 
-Diese Anleitung führt Sie durch die komplette Installation von der Hardware bis zur fertigen Integration in Home Assistant.
+This guide will walk you through the complete installation from hardware to full integration in Home Assistant.
 
-## Übersicht
+## Overview
 
 ```
 ┌─────────────────────┐
-│  OBIS-Stromzähler   │
-│   (D0-Protokoll)    │
+│  OBIS Meter         │
+│   (D0 Protocol)     │
 └──────────┬──────────┘
-           │ IR-Schnittstelle
+           │ IR Interface
            ▼
 ┌─────────────────────┐
-│   IR-Lesekopf       │
+│   IR Read Head      │
 │   (USB)             │
 └──────────┬──────────┘
            │
@@ -23,11 +23,11 @@ Diese Anleitung führt Sie durch die komplette Installation von der Hardware bis
 │  Port 3000          │
 └──────────┬──────────┘
            │
-           │ TCP/IP Netzwerk
+           │ TCP/IP Network
            ▼
 ┌─────────────────────┐
 │  Home Assistant     │
-│  (VM auf Synology)  │
+│  (VM on Synology)   │
 │  + OBIS D0 Reader   │
 │  + Mosquitto MQTT   │
 └──────────┬──────────┘
@@ -35,94 +35,94 @@ Diese Anleitung führt Sie durch die komplette Installation von der Hardware bis
            ▼
 ┌─────────────────────┐
 │  Energy Dashboard   │
-│  + 15+ Sensoren     │
+│  + 15+ Sensors      │
 └─────────────────────┘
 ```
 
-## Teil 1: Hardware-Setup
+## Part 1: Hardware Setup
 
-### Benötigte Hardware
+### Required Hardware
 
-1. **OBIS-Stromzähler** mit D0-Schnittstelle
-   - Z.B. EasyMeter, EBZ, EMH, Iskraemeco, etc.
+1. **OBIS Electricity Meter** with D0 interface
+   - E.g., EasyMeter, EBZ, EMH, Iskraemeco, etc.
 
-2. **IR-Lesekopf** mit USB-Anschluss
-   - Empfohlen: Hichi USB IR Lesekopf
-   - Alternative: Selbstbau mit IR-LED/Photodiode
+2. **IR Read Head** with USB connection
+   - Recommended: Hichi USB IR Read Head
+   - Alternative: DIY with IR LED/Photodiode
 
-3. **Raspberry Pi** (bereits vorhanden ✓)
-   - Modell: Beliebig (Pi 3, Pi 4, Pi Zero W)
-   - OS: Raspberry Pi OS (ehemals Raspbian)
+3. **Raspberry Pi** (already available ✓)
+   - Model: Any (Pi 3, Pi 4, Pi Zero W)
+   - OS: Raspberry Pi OS (formerly Raspbian)
 
-4. **Netzwerkverbindung**
-   - LAN oder WLAN zwischen Pi und Home Assistant
+4. **Network Connection**
+   - LAN or WLAN between Pi and Home Assistant
 
-### IR-Lesekopf montieren
+### Mount IR Read Head
 
-1. Positionieren Sie den IR-Lesekopf auf der optischen Schnittstelle des Zählers
-2. Die Schnittstelle ist meist mit einem Symbol markiert: 🔦
-3. Befestigen Sie den Lesekopf mit Magneten oder Klebeband
-4. Verbinden Sie den Lesekopf via USB mit dem Raspberry Pi
+1. Position the IR read head on the optical interface of the meter
+2. The interface is usually marked with a symbol: 🔦
+3. Secure the read head with magnets or adhesive tape
+4. Connect the read head via USB to the Raspberry Pi
 
-## Teil 2: Raspberry Pi einrichten
+## Part 2: Raspberry Pi Setup
 
-### 2.1 Raspberry Pi OS installieren (falls noch nicht geschehen)
+### 2.1 Install Raspberry Pi OS (if not already done)
 
 ```bash
-# System aktualisieren
+# Update system
 sudo apt update
 sudo apt upgrade -y
 ```
 
-### 2.2 USB-Lesekopf identifizieren
+### 2.2 Identify USB Read Head
 
 ```bash
-# USB-Geräte anzeigen
+# Show USB devices
 lsusb
 
-# Serielle Geräte finden
+# Find serial devices
 ls -la /dev/ttyUSB*
-# Ausgabe sollte sein: /dev/ttyUSB0
+# Output should be: /dev/ttyUSB0
 
-# Falls /dev/ttyACM* statt ttyUSB*
+# If /dev/ttyACM* instead of ttyUSB*
 ls -la /dev/ttyACM*
 ```
 
-**Notieren Sie sich das Gerät** (meist `/dev/ttyUSB0`)
+**Note the device** (usually `/dev/ttyUSB0`)
 
-### 2.3 Rohdaten vom Zähler testen
+### 2.3 Test Raw Data from Meter
 
 ```bash
-# Berechtigung setzen
+# Set permissions
 sudo chmod 666 /dev/ttyUSB0
 
-# Rohdaten anzeigen (5 Sekunden)
+# Display raw data (5 seconds)
 sudo timeout 5 cat /dev/ttyUSB0
 
-# Mit Hex-Ausgabe
+# With hex output
 sudo timeout 5 cat /dev/ttyUSB0 | xxd
 ```
 
-Sie sollten jetzt Daten vom Zähler sehen!
+You should now see data from the meter!
 
-### 2.4 ser2net installieren und konfigurieren
+### 2.4 Install and Configure ser2net
 
 ```bash
-# ser2net installieren
+# Install ser2net
 sudo apt install ser2net -y
 
-# Version prüfen
+# Check version
 ser2net -v
 ```
 
-**Für ser2net 4.x (neuere Versionen):**
+**For ser2net 4.x (newer versions):**
 
 ```bash
-# Konfigurationsdatei erstellen
+# Create configuration file
 sudo nano /etc/ser2net/ser2net.yaml
 ```
 
-Fügen Sie ein:
+Add:
 
 ```yaml
 connection: &easyMeter
@@ -136,88 +136,88 @@ connection: &easyMeter
              9600e71,local
 ```
 
-**Für ser2net 3.x (ältere Versionen):**
+**For ser2net 3.x (older versions):**
 
 ```bash
-# Konfigurationsdatei bearbeiten
+# Edit configuration file
 sudo nano /etc/ser2net.conf
 ```
 
-Fügen Sie ein:
+Add:
 
 ```
 3000:raw:600:/dev/ttyUSB0:9600 EVEN 7DATABITS 1STOPBIT XONXOFF LOCAL -RTSCTS
 ```
 
-### 2.5 ser2net starten
+### 2.5 Start ser2net
 
 ```bash
-# Dienst starten
+# Start service
 sudo systemctl start ser2net
 
-# Autostart aktivieren
+# Enable autostart
 sudo systemctl enable ser2net
 
-# Status prüfen
+# Check status
 sudo systemctl status ser2net
-# Sollte "active (running)" zeigen
+# Should show "active (running)"
 
-# Port prüfen
+# Check port
 sudo netstat -tulpn | grep 3000
-# Sollte zeigen: tcp  0.0.0.0:3000  LISTEN
+# Should show: tcp  0.0.0.0:3000  LISTEN
 ```
 
-### 2.6 ser2net testen
+### 2.6 Test ser2net
 
 ```bash
-# Von einem anderen Rechner im Netzwerk
+# From another computer on the network
 telnet 192.168.1.100 3000
 
-# Sie sollten jetzt Daten vom Stromzähler sehen
-# Beenden mit: Ctrl+]  dann quit
+# You should now see data from the electricity meter
+# Exit with: Ctrl+]  then quit
 ```
 
-**Notieren Sie sich die IP des Raspberry Pi!**
+**Note the IP of your Raspberry Pi!**
 
-## Teil 3: Home Assistant vorbereiten
+## Part 3: Prepare Home Assistant
 
-### 3.1 Mosquitto MQTT Broker installieren
+### 3.1 Install Mosquitto MQTT Broker
 
-1. Öffnen Sie Home Assistant
-2. Gehen Sie zu **Einstellungen** → **Add-ons**
-3. Klicken Sie auf **Add-on Store**
-4. Suchen Sie nach **"Mosquitto broker"**
-5. Klicken Sie auf **Installieren**
-6. Nach der Installation:
-   - Aktivieren Sie **Start on boot**
-   - Aktivieren Sie **Watchdog**
-   - Klicken Sie auf **Start**
+1. Open Home Assistant
+2. Go to **Settings** → **Add-ons**
+3. Click on **Add-on Store**
+4. Search for **"Mosquitto broker"**
+5. Click on **Install**
+6. After installation:
+   - Enable **Start on boot**
+   - Enable **Watchdog**
+   - Click on **Start**
 
-### 3.2 MQTT Integration einrichten
+### 3.2 Set up MQTT Integration
 
-1. Gehen Sie zu **Einstellungen** → **Geräte & Dienste**
-2. Klicken Sie auf **+ Integration hinzufügen**
-3. Suchen Sie nach **"MQTT"**
-4. Wählen Sie **MQTT**
-5. Konfiguration:
-   - Broker: `core-mosquitto` (oder `localhost`)
+1. Go to **Settings** → **Devices & Services**
+2. Click on **+ Add Integration**
+3. Search for **"MQTT"**
+4. Select **MQTT**
+5. Configuration:
+   - Broker: `core-mosquitto` (or `localhost`)
    - Port: `1883`
-   - Benutzername: (leer lassen)
-   - Passwort: (leer lassen)
-6. Klicken Sie auf **Absenden**
+   - Username: (leave empty)
+   - Password: (leave empty)
+6. Click on **Submit**
 
-## Teil 4: OBIS D0 Reader Add-on installieren
+## Part 4: Install OBIS D0 Reader Add-on
 
-### 4.1 Verbindung testen
+### 4.1 Test Connection
 
-Testen Sie die Verbindung zum ser2net Server:
+Test the connection to the ser2net server:
 
 ```bash
-# Von Ihrem PC/Mac aus
+# From your PC/Mac
 telnet 192.168.1.100 3000
 ```
 
-Sie sollten ASCII-Text (D0-Protokoll) vom Stromzähler sehen, z.B.:
+You should see ASCII text (D0 protocol) from the electricity meter, e.g.:
 ```
 /EBZ...
 1-0:1.8.0*255(...)
@@ -225,50 +225,50 @@ Sie sollten ASCII-Text (D0-Protokoll) vom Stromzähler sehen, z.B.:
 ...
 ```
 
-Beenden mit: `Ctrl+]` dann `quit`
+Exit with: `Ctrl+]` then `quit`
 
-### 4.2 Add-on Repository zu Home Assistant hinzufügen
+### 4.2 Add Add-on Repository to Home Assistant
 
-**Option A: Via GitHub (empfohlen)**
+**Option A: Via GitHub (recommended)**
 
-1. Forken Sie das Repository auf GitHub
+1. Fork the repository on GitHub
 2. In Home Assistant:
-   - **Einstellungen** → **Add-ons** → **Add-on Store**
-   - Klicken Sie auf **⋮** (drei Punkte oben rechts)
-   - Wählen Sie **Repositories**
-   - Fügen Sie hinzu: `https://github.com/lejando/homeassistant-obis`
-   - Klicken Sie auf **Hinzufügen**
+   - **Settings** → **Add-ons** → **Add-on Store**
+   - Click on **⋮** (three dots top right)
+   - Select **Repositories**
+   - Add: `https://github.com/lejando/homeassistant-obis`
+   - Click on **Add**
 
-**Option B: Lokale Installation**
+**Option B: Local Installation**
 
-1. Kopieren Sie den `obis-d0-reader` Ordner auf Ihren Home Assistant Server:
+1. Copy the `obis-d0-reader` folder to your Home Assistant server:
 
 ```bash
 # Via SSH
 scp -r obis-d0-reader/ root@homeassistant.local:/addons/
 
-# Oder via Samba/SMB
-# Kopieren Sie den Ordner nach: /addons/obis-d0-reader/
+# Or via Samba/SMB
+# Copy the folder to: /addons/obis-d0-reader/
 ```
 
 2. In Home Assistant:
-   - **Einstellungen** → **Add-ons** → **Add-on Store**
-   - Klicken Sie auf **Reload** (↻ Symbol oben rechts)
+   - **Settings** → **Add-ons** → **Add-on Store**
+   - Click on **Reload** (↻ icon top right)
 
-### 4.3 OBIS D0 Reader installieren
+### 4.3 Install OBIS D0 Reader
 
-1. Im **Add-on Store** suchen Sie nach **"OBIS D0 Reader"**
-2. Klicken Sie auf das Add-on
-3. Klicken Sie auf **Installieren**
-4. Warten Sie, bis die Installation abgeschlossen ist (kann mehrere Minuten dauern)
+1. In the **Add-on Store** search for **"OBIS D0 Reader"**
+2. Click on the add-on
+3. Click on **Install**
+4. Wait for the installation to complete (may take several minutes)
 
-### 4.4 Add-on konfigurieren
+### 4.4 Configure Add-on
 
-Gehen Sie zum **Konfiguration** Tab:
+Go to the **Configuration** tab:
 
 ```yaml
-tcp_host: "192.168.1.100"    # IP Ihres Raspberry Pi
-tcp_port: 3000               # ser2net Port
+tcp_host: "192.168.1.100"    # IP of your Raspberry Pi
+tcp_port: 3000               # ser2net port
 
 mqtt_enabled: true
 mqtt_host: "core-mosquitto"
@@ -283,182 +283,182 @@ mqtt_discovery_prefix: "homeassistant"
 mqtt_topic_mode: "auto"
 mqtt_custom_topics: {}
 
-meter_name: "easyMeter"      # Ihr Zählername
-poll_interval: 2             # Alle 2 Sekunden
+meter_name: "easyMeter"      # Your meter name
+poll_interval: 2             # Every 2 seconds
 
 log_level: "info"
 ```
 
-**Speichern** Sie die Konfiguration!
+**Save** the configuration!
 
-### 4.5 Add-on starten
+### 4.5 Start Add-on
 
-1. Gehen Sie zum **Info** Tab
-2. Aktivieren Sie:
-   - ☑️ **Start on boot** - Auto-Start
-   - ☑️ **Watchdog** - Automatischer Neustart
-3. Klicken Sie auf **Start**
+1. Go to the **Info** tab
+2. Enable:
+   - ☑️ **Start on boot** - Auto-start
+   - ☑️ **Watchdog** - Automatic restart
+3. Click on **Start**
 
-### 4.6 Logs prüfen
+### 4.6 Check Logs
 
-Gehen Sie zum **Log** Tab. Sie sollten sehen:
+Go to the **Log** tab. You should see:
 
 ```
-[info] Starte OBIS D0 Reader...
-[info] Konfiguration:
+[info] Starting OBIS D0 Reader...
+[info] Configuration:
 [info]   TCP: 192.168.1.100:3000
 [info]   MQTT: True (core-mosquitto)
-[info]   Zähler: easyMeter
-[info] OBIS D0 Reader gestartet
-[info] Verbinde zu MQTT Broker core-mosquitto:1883...
-[info] MQTT-Verbindung erfolgreich
-[info] Publiziere MQTT Discovery Konfigurationen...
-[info] MQTT Discovery abgeschlossen
-[info] Verbinde zu 192.168.1.100:3000...
-[info] TCP-Verbindung erfolgreich
-[info] Erfolgreich 16 Werte geparst
-[info] Aktuelle Leistung: 1234.56 W
+[info]   Meter: easyMeter
+[info] OBIS D0 Reader started
+[info] Connecting to MQTT Broker core-mosquitto:1883...
+[info] MQTT connection successful
+[info] Publishing MQTT Discovery configurations...
+[info] MQTT Discovery completed
+[info] Connecting to 192.168.1.100:3000...
+[info] TCP connection successful
+[info] Successfully parsed 16 values
+[info] Current power: 1234.56 W
 ```
 
-✅ **Perfekt!** Das Add-on läuft!
+✅ **Perfect!** The add-on is running!
 
-## Teil 5: Sensoren in Home Assistant nutzen
+## Part 5: Use Sensors in Home Assistant
 
-### 5.1 Sensoren finden
+### 5.1 Find Sensors
 
-1. Gehen Sie zu **Einstellungen** → **Geräte & Dienste**
-2. Klicken Sie auf **MQTT**
-3. Sie sollten ein Gerät sehen: **easyMeter**
-4. Klicken Sie darauf
+1. Go to **Settings** → **Devices & Services**
+2. Click on **MQTT**
+3. You should see a device: **easyMeter**
+4. Click on it
 
-Sie sehen jetzt alle Sensoren:
+You will now see all sensors:
 - easyMeter Total Energy Import
 - easyMeter Total Energy Export
 - easyMeter Power Total
 - easyMeter Power L1, L2, L3
 - easyMeter Voltage L1, L2, L3
-- ... und mehr
+- ... and more
 
-### 5.2 Energy Dashboard einrichten
+### 5.2 Set up Energy Dashboard
 
-1. Gehen Sie zu **Einstellungen** → **Dashboards** → **Energie**
-2. **Stromnetz** → **Netzverbrauch**
-3. Wählen Sie: `sensor.easymeter_total_energy_import`
-4. Optional: **Rücklieferung zum Netz**
-5. Wählen Sie: `sensor.easymeter_total_energy_export`
-6. Speichern
+1. Go to **Settings** → **Dashboards** → **Energy**
+2. **Grid consumption** → **Add consumption**
+3. Select: `sensor.easymeter_total_energy_import`
+4. Optional: **Return to grid**
+5. Select: `sensor.easymeter_total_energy_export`
+6. Save
 
-Nach 1-2 Stunden sehen Sie die erste Statistik!
+After 1-2 hours you will see the first statistics!
 
-### 5.3 Dashboard-Karte erstellen
+### 5.3 Create Dashboard Card
 
-Erstellen Sie eine Lovelace-Karte:
+Create a Lovelace card:
 
 ```yaml
 type: entities
-title: Stromzähler
+title: Electricity Meter
 entities:
   - entity: sensor.easymeter_power_total
-    name: Aktuelle Leistung
+    name: Current Power
   - entity: sensor.easymeter_total_energy_import
-    name: Gesamtverbrauch
+    name: Total Consumption
   - entity: sensor.easymeter_total_energy_export
-    name: Einspeisung
+    name: Feed-in
   - entity: sensor.easymeter_voltage_l1
-    name: Spannung L1
+    name: Voltage L1
   - entity: sensor.easymeter_voltage_l2
-    name: Spannung L2
+    name: Voltage L2
   - entity: sensor.easymeter_voltage_l3
-    name: Spannung L3
+    name: Voltage L3
 ```
 
-## Teil 6: Erweiterte Konfiguration (Optional)
+## Part 6: Advanced Configuration (Optional)
 
-### 6.1 Custom MQTT-Topics für externe Systeme
+### 6.1 Custom MQTT Topics for External Systems
 
-Falls Sie Daten an andere Systeme senden möchten (Node-RED, Grafana, etc.):
+If you want to send data to other systems (Node-RED, Grafana, etc.):
 
 ```yaml
 mqtt_topic_mode: "custom"
 mqtt_custom_topics:
-  "1-0:16.7.0*255": "energie/leistung/aktuell"
-  "1-0:1.8.0*255": "energie/verbrauch/total"
+  "1-0:16.7.0*255": "energy/power/current"
+  "1-0:1.8.0*255": "energy/consumption/total"
   "power_total": "nodered/power"
   "total_energy_import": "grafana/energy"
 ```
 
-### 6.2 Automationen erstellen
+### 6.2 Create Automations
 
-Beispiel: Benachrichtigung bei hohem Verbrauch
+Example: Notification on high consumption
 
 ```yaml
 automation:
-  - alias: "Hoher Stromverbrauch"
+  - alias: "High Power Consumption"
     trigger:
       - platform: numeric_state
         entity_id: sensor.easymeter_power_total
-        above: 3000  # 3000 Watt
+        above: 3000  # 3000 Watts
         for:
           minutes: 5
     action:
       - service: notify.mobile_app
         data:
-          title: "Hoher Stromverbrauch!"
-          message: "Aktuell: {{ states('sensor.easymeter_power_total') }} W"
+          title: "High Power Consumption!"
+          message: "Current: {{ states('sensor.easymeter_power_total') }} W"
 ```
 
-## Fehlerbehebung
+## Troubleshooting
 
-### Problem: Keine Daten empfangen
+### Problem: No Data Received
 
 ```bash
-# Auf Raspberry Pi
+# On Raspberry Pi
 sudo systemctl status ser2net
 sudo netstat -tulpn | grep 3000
 sudo timeout 10 cat /dev/ttyUSB0 | xxd
 ```
 
-### Problem: MQTT-Verbindung fehlgeschlagen
+### Problem: MQTT Connection Failed
 
-- Ist Mosquitto gestartet?
-- Prüfen Sie Add-on Logs
-- Prüfen Sie MQTT Integration
+- Is Mosquitto running?
+- Check add-on logs
+- Check MQTT integration
 
-### Problem: Sensoren erscheinen nicht
+### Problem: Sensors Not Appearing
 
-- Discovery aktiviert?
-- MQTT Integration konfiguriert?
-- Home Assistant neu starten
+- Discovery enabled?
+- MQTT integration configured?
+- Restart Home Assistant
 
-## Checkliste
+## Checklist
 
-Vor dem Abschluss prüfen Sie:
+Before completion, verify:
 
-- [ ] IR-Lesekopf am Zähler montiert
-- [ ] Raspberry Pi ser2net läuft
-- [ ] TCP-Verbindung funktioniert (telnet test)
-- [ ] Home Assistant Mosquitto läuft
-- [ ] MQTT Integration eingerichtet
-- [ ] OBIS D0 Reader Add-on gestartet
-- [ ] Add-on Logs zeigen erfolgreiche Verbindung
-- [ ] Sensoren in MQTT-Integration sichtbar
-- [ ] Energy Dashboard konfiguriert
-- [ ] Dashboard-Karte erstellt
+- [ ] IR read head mounted on meter
+- [ ] Raspberry Pi ser2net running
+- [ ] TCP connection working (telnet test)
+- [ ] Home Assistant Mosquitto running
+- [ ] MQTT integration set up
+- [ ] OBIS D0 Reader add-on started
+- [ ] Add-on logs show successful connection
+- [ ] Sensors visible in MQTT integration
+- [ ] Energy Dashboard configured
+- [ ] Dashboard card created
 
-## Nächste Schritte
+## Next Steps
 
-1. **Überwachen Sie die Daten** für 24 Stunden
-2. **Erstellen Sie Automationen** basierend auf Verbrauch
-3. **Integrieren Sie in Dashboards** für Visualisierung
-4. **Exportieren Sie zu Grafana** für erweiterte Auswertungen (optional)
+1. **Monitor data** for 24 hours
+2. **Create automations** based on consumption
+3. **Integrate into dashboards** for visualization
+4. **Export to Grafana** for advanced analytics (optional)
 
 ## Support
 
-Bei Problemen:
+If you encounter problems:
 
-1. Prüfen Sie die Add-on **Logs**
-2. Testen Sie die **TCP-Verbindung** zum ser2net (telnet)
-3. Prüfen Sie die **ser2net Logs** auf dem Pi
-4. Öffnen Sie ein **GitHub Issue** mit Logs
+1. Check the add-on **logs**
+2. Test the **TCP connection** to ser2net (telnet)
+3. Check the **ser2net logs** on the Pi
+4. Open a **GitHub issue** with logs
 
-**Viel Erfolg!** 🎉
+**Good luck!** 🎉
