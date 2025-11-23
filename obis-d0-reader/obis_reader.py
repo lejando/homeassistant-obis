@@ -484,6 +484,14 @@ def load_config() -> Config:
         with open('/data/options.json', 'r') as f:
             options = json.load(f)
 
+        # Log config file path and keys (without sensitive values)
+        print(f"Loaded config from /data/options.json")
+        print(f"Config keys present: {list(options.keys())}")
+        print(f"MQTT user present: {'mqtt_user' in options}")
+        print(f"MQTT password present: {'mqtt_password' in options}")
+        print(f"openWB user present: {'openwb_mqtt_user' in options}")
+        print(f"openWB password present: {'openwb_mqtt_password' in options}")
+
         return Config(
             tcp_host=options.get('tcp_host', '192.168.1.100'),
             tcp_port=options.get('tcp_port', 3000),

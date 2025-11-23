@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2025-11-23
+
+### Fixed
+- Password field persistence issue
+  - Changed schema from `password?` to `str?` for better compatibility
+  - Added debug logging to verify config loading
+  - Passwords and usernames should now persist across restarts
+
+### Improved
+- Config loading debug output shows which fields are present in options.json
+
 ## [1.2.2] - 2025-11-23
 
 ### Fixed
@@ -174,6 +185,7 @@ This update enables:
 - Configurable poll interval
 - Adjustable log level
 
+[1.2.3]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.3
 [1.2.2]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.2
 [1.2.1]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.1
 [1.2.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.0

@@ -1,5 +1,5 @@
 name: "OBIS D0 Reader"
-version: "1.2.2"
+version: "1.2.3"
 slug: obis_d0_reader
 description: "Reads OBIS D0 electricity meters via ser2net and sends data to MQTT"
 arch:
@@ -175,7 +175,7 @@ schema:
   mqtt_host: str
   mqtt_port: int
   mqtt_user: str?
-  mqtt_password: password?
+  mqtt_password: str?
   mqtt_base_topic: str
   mqtt_discovery: bool
   mqtt_discovery_prefix: str
@@ -184,7 +184,7 @@ schema:
   openwb_mqtt_host: str
   openwb_mqtt_port: int
   openwb_mqtt_user: str?
-  openwb_mqtt_password: password?
+  openwb_mqtt_password: str?
   openwb_device_id: int
   meter_name: str
   poll_interval: int(1,60)
