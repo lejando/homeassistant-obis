@@ -59,4 +59,4 @@ schema:
 services:
   - mqtt:want
 
-image: "ghcr.io/{arch}-obis-d0-reader"
+# Image wird vom Build-System automatisch gesetzt, wenn build.yaml vorhanden ist

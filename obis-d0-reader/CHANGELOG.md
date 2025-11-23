@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial release
+- Updated to paho-mqtt 2.x for future compatibility
 - D0-Protokoll Parser für OBIS-Stromzähler
 - TCP/IP Verbindung zu ser2net
 - MQTT Auto-Discovery für Home Assistant
