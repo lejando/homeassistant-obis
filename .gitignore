@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Captured data files
+sml_data_*.bin
+d0_data_*.txt
+unknown_data_*.bin
+
+# Local configuration
+options.json
+secrets.yaml
+
+# Development and internal files
+.dev/
+.internal/
+
+# Claude specific
+.claude/
+
+# Docker
+.dockerignore
