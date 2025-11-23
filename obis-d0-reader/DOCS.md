@@ -8,6 +8,7 @@ This document provides detailed explanations for all configuration parameters av
 - [MQTT Broker Settings](#mqtt-broker-settings)
 - [MQTT Discovery Settings](#mqtt-discovery-settings)
 - [Advanced MQTT Topic Configuration](#advanced-mqtt-topic-configuration)
+- [openWB Integration Settings](#openwb-integration-settings)
 - [Meter Settings](#meter-settings)
 - [Logging Settings](#logging-settings)
 - [Configuration Examples](#configuration-examples)
@@ -362,6 +363,305 @@ See the full list in the [README.md](README.md#sensor-names-and-obis-codes)
 
 ---
 
+## openWB Integration Settings
+
+These settings configure the integration with openWB (Open Wallbox) for electric vehicle charging control. The add-on can simultaneously send data to both Home Assistant and openWB using two independent MQTT connections.
+
+### What is openWB?
+
+openWB is an open-source wallbox controller for electric vehicle charging that uses your electricity meter data for intelligent load management. By integrating your OBIS meter with openWB, the wallbox can:
+- Perform phase-based load management to prevent grid overload
+- Optimize charging with solar power (PV surplus charging)
+- Monitor and control charging based on your household's total power consumption
+
+### `openwb_enabled`
+
+**Type:** Boolean
+**Required:** Yes
+**Default:** `false`
+**Options:** `true` or `false`
+
+Enable or disable data forwarding to openWB.
+
+**When enabled:**
+- Meter data is sent to a second MQTT broker (your openWB device)
+- Data is automatically formatted according to openWB requirements
+- Both Home Assistant and openWB receive data simultaneously
+- kWh values are automatically converted to Wh (as required by openWB)
+- Phase data is formatted as JSON arrays
+
+**When to enable:**
+- If you have an openWB wallbox
+- If you want to use your meter for EV charging load management
+- If you want phase-based charging control
+
+**Recommendation:** Only enable if you have an openWB installation.
+
+---
+
+### `openwb_mqtt_host`
+
+**Type:** String
+**Required:** Yes (if openWB is enabled)
+**Default:** `"192.168.1.50"`
+**Example:** `"192.168.1.50"`, `"openwb.local"`, `"openwb"`
+
+The hostname or IP address of your openWB MQTT broker.
+
+**How to find this value:**
+- This is usually the IP address of your openWB device
+- You can find it in your router's DHCP client list
+- Or use the openWB hostname if mDNS is configured (e.g., `openwb.local`)
+
+**Common values:**
+- `"192.168.1.50"` - Direct IP address (most common)
+- `"openwb.local"` - Hostname via mDNS
+- `"openwb"` - Simple hostname if DNS is configured
+
+**Important:** This is typically a **different** MQTT broker than your Home Assistant broker, running on the openWB device itself.
+
+---
+
+### `openwb_mqtt_port`
+
+**Type:** Integer
+**Required:** Yes (if openWB is enabled)
+**Default:** `1883`
+**Range:** 1-65535
+**Example:** `1883`
+
+The port number of your openWB MQTT broker.
+
+**Standard value:** `1883` (default MQTT port)
+
+**Note:** Most openWB installations use the standard port 1883.
+
+---
+
+### `openwb_mqtt_user`
+
+**Type:** String (Optional)
+**Required:** No
+**Default:** `""` (empty)
+**Example:** `"openwb_user"`
+
+The username for openWB MQTT broker authentication.
+
+**When to use:**
+- Leave empty if your openWB MQTT broker doesn't require authentication
+- Most default openWB installations don't require authentication
+- Only fill in if you've specifically configured MQTT authentication on your openWB
+
+---
+
+### `openwb_mqtt_password`
+
+**Type:** Password (Optional)
+**Required:** No
+**Default:** `""` (empty)
+**Example:** `"your_secure_password"`
+
+The password for openWB MQTT broker authentication.
+
+**When to use:**
+- Leave empty if your openWB MQTT broker doesn't require authentication
+- Most default openWB installations don't require authentication
+- Only fill in if you've specifically configured MQTT authentication on your openWB
+
+---
+
+### `openwb_device_id`
+
+**Type:** Integer
+**Required:** Yes (if openWB is enabled)
+**Default:** `8`
+**Range:** 0-99
+**Example:** `8` (MQTT module counter)
+
+The device ID for the counter module in openWB.
+
+**Topic structure:**
+```
+openWB/set/mqtt/counter/{device_id}/get/power
+openWB/set/mqtt/counter/{device_id}/get/imported
+openWB/set/mqtt/counter/{device_id}/get/exported
+openWB/set/mqtt/counter/{device_id}/get/currents
+openWB/set/mqtt/counter/{device_id}/get/frequency
+openWB/set/mqtt/counter/{device_id}/get/voltages
+openWB/set/mqtt/counter/{device_id}/get/powers
+```
+
+**Default value:** `8`
+- This is the standard device ID for the MQTT module counter in openWB
+- openWB reserves device ID 8 for external MQTT counter sources
+
+**When to change:**
+- If you're using a different device ID in your openWB configuration
+- If you have multiple counters configured in openWB
+- Check your openWB web interface: Configuration → Counter → MQTT
+
+**How to verify:**
+- Log into your openWB web interface
+- Go to Configuration → Counter → MQTT
+- Check the configured device ID
+- Use the same value here
+
+---
+
+### openWB Data Mapping
+
+The add-on automatically sends the following data to openWB:
+
+#### Required Fields (Critical for operation)
+
+| MQTT Topic | Data | Unit | Format | Description |
+|------------|------|------|--------|-------------|
+| `openWB/set/mqtt/counter/{id}/get/power` | Total power | W | Float | Positive = import, Negative = export |
+| `openWB/set/mqtt/counter/{id}/get/imported` | Imported energy | Wh | Float | Always positive, auto-converted from kWh |
+| `openWB/set/mqtt/counter/{id}/get/exported` | Exported energy | Wh | Float | Always positive, auto-converted from kWh |
+| `openWB/set/mqtt/counter/{id}/get/currents` | Phase currents | A | JSON Array | Format: `[L1, L2, L3]` |
+
+#### Optional Fields (Display only)
+
+| MQTT Topic | Data | Unit | Format | Description |
+|------------|------|------|--------|-------------|
+| `openWB/set/mqtt/counter/{id}/get/frequency` | Grid frequency | Hz | Float | Network frequency |
+| `openWB/set/mqtt/counter/{id}/get/voltages` | Phase voltages | V | JSON Array | Format: `[L1, L2, L3]` |
+| `openWB/set/mqtt/counter/{id}/get/powers` | Phase powers | W | JSON Array | Format: `[L1, L2, L3]` |
+
+**OBIS Code Mapping:**
+- Power: `1-0:16.7.0*255` → `power`
+- Import: `1-0:1.8.0*255` → `imported` (converted kWh → Wh)
+- Export: `1-0:2.8.0*255` → `exported` (converted kWh → Wh)
+- Currents: `1-0:31.7.0*255`, `1-0:51.7.0*255`, `1-0:71.7.0*255` → `currents` array
+- Frequency: `1-0:14.7.0*255` → `frequency`
+- Voltages: `1-0:32.7.0*255`, `1-0:52.7.0*255`, `1-0:72.7.0*255` → `voltages` array
+- Phase powers: `1-0:36.7.0*255`, `1-0:56.7.0*255`, `1-0:76.7.0*255` → `powers` array
+
+**Automatic Conversions:**
+- Energy values are automatically converted from kWh to Wh (multiply by 1000)
+- Phase data is automatically formatted as JSON arrays
+- All numeric values use decimal point (`.`) as required by openWB
+- All topics are published with `retain=true` flag
+
+---
+
+### Example openWB Configuration
+
+#### Basic openWB Integration
+
+```yaml
+# Home Assistant MQTT (first connection)
+mqtt_enabled: true
+mqtt_host: "core-mosquitto"
+mqtt_port: 1883
+mqtt_discovery: true
+
+# openWB MQTT (second connection)
+openwb_enabled: true
+openwb_mqtt_host: "192.168.1.50"
+openwb_mqtt_port: 1883
+openwb_mqtt_user: ""
+openwb_mqtt_password: ""
+openwb_device_id: 8
+```
+
+This configuration:
+- Sends data to Home Assistant for monitoring and energy dashboard
+- Simultaneously sends data to openWB for charging control
+- Uses two independent MQTT connections
+- Auto-converts all values to openWB format
+
+---
+
+#### openWB with Authentication
+
+```yaml
+openwb_enabled: true
+openwb_mqtt_host: "openwb.local"
+openwb_mqtt_port: 1883
+openwb_mqtt_user: "openwb_mqtt"
+openwb_mqtt_password: "secure_password"
+openwb_device_id: 8
+```
+
+---
+
+#### Multiple openWB Counters
+
+If you have multiple counters in openWB, use different device IDs:
+
+```yaml
+# Main meter (device ID 8)
+openwb_enabled: true
+openwb_device_id: 8
+```
+
+```yaml
+# Secondary meter (device ID 9)
+openwb_enabled: true
+openwb_device_id: 9
+```
+
+**Note:** You need separate add-on instances for multiple meters.
+
+---
+
+### Troubleshooting openWB Integration
+
+#### Problem: openWB doesn't receive data
+
+**Check these parameters:**
+- `openwb_enabled`: Must be `true`
+- `openwb_mqtt_host`: Verify IP address is correct (`ping IP_ADDRESS`)
+- `openwb_device_id`: Must match your openWB counter configuration
+
+**Solution:**
+1. Check add-on logs for "openWB MQTT-Verbindung erfolgreich" message
+2. Set `log_level: "debug"` to see published topics
+3. Use MQTT Explorer to verify topics are published
+4. Check openWB web interface for incoming data
+
+---
+
+#### Problem: Data format errors in openWB
+
+**Check these:**
+- Energy values should be in Wh (not kWh) - conversion is automatic
+- Arrays should be JSON format: `[1.2, 3.4, 5.6]`
+- Numbers must use decimal point (`.`), not comma (`,`)
+
+**Solution:**
+1. Check add-on logs with `log_level: "debug"`
+2. Look for "openWB: Daten erfolgreich publiziert" messages
+3. Verify numeric format in MQTT Explorer
+
+---
+
+#### Problem: openWB shows wrong device ID
+
+**Solution:**
+1. Check your openWB configuration: Configuration → Counter → MQTT
+2. Update `openwb_device_id` to match
+3. Restart the add-on
+
+---
+
+### openWB Configuration in openWB Web Interface
+
+To configure openWB to receive data from this add-on:
+
+1. **Log into openWB web interface**
+2. **Go to:** Configuration → Counter → MQTT
+3. **Enable:** MQTT counter module
+4. **Set device ID:** 8 (or your custom ID)
+5. **Configure required topics:** (should match the add-on device ID)
+6. **Save configuration**
+
+The add-on will automatically publish to the correct topics based on your `openwb_device_id` setting.
+
+---
+
 ## Meter Settings
 
 These settings configure the meter identification and polling behavior.
@@ -599,6 +899,48 @@ This configuration:
 - Custom MQTT topics for integration with external systems
 - Sends data to multiple systems simultaneously
 - Debug logging for verification
+
+---
+
+### Configuration with openWB Integration
+
+```yaml
+tcp_host: "192.168.1.100"
+tcp_port: 3000
+
+# Home Assistant MQTT
+mqtt_enabled: true
+mqtt_host: "core-mosquitto"
+mqtt_port: 1883
+mqtt_user: ""
+mqtt_password: ""
+mqtt_base_topic: "homeassistant/sensor/obis"
+mqtt_discovery: true
+mqtt_discovery_prefix: "homeassistant"
+
+mqtt_topic_mode: "auto"
+mqtt_custom_topics: {}
+
+# openWB Integration
+openwb_enabled: true
+openwb_mqtt_host: "192.168.1.50"
+openwb_mqtt_port: 1883
+openwb_mqtt_user: ""
+openwb_mqtt_password: ""
+openwb_device_id: 8
+
+meter_name: "easyMeter"
+poll_interval: 2
+
+log_level: "info"
+```
+
+This configuration:
+- Sends data to Home Assistant (core-mosquitto)
+- Simultaneously sends data to openWB (192.168.1.50)
+- Two independent MQTT connections
+- Automatic format conversion for openWB
+- Perfect for EV charging with load management
 
 ---
 

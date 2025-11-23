@@ -11,6 +11,8 @@ This add-on connects to an OBIS D0 electricity meter via TCP (ser2net) and publi
 - ✅ **MQTT Auto-Discovery** - Sensors appear automatically in Home Assistant
 - ✅ **Configurable MQTT Topics** - Flexible topic mapping
 - ✅ **Energy Dashboard Integration** - All energy values are compatible
+- ✅ **openWB Integration** - Direct integration with openWB wallbox for EV charging control
+- ✅ **Dual MQTT Support** - Send data to Home Assistant AND openWB simultaneously
 - ✅ **15+ Sensors** - Energy, power, voltage, current per phase
 
 ## Supported Measurements
@@ -243,6 +245,63 @@ The add-on additionally publishes all values as a JSON object:
   "power_l3": "384.06"
 }
 ```
+
+## openWB Integration (EV Charging)
+
+The add-on can simultaneously send meter data to both Home Assistant and openWB (Open Wallbox) for electric vehicle charging control.
+
+### What is openWB?
+
+openWB is an open-source wallbox controller that uses your electricity meter data for intelligent EV charging with:
+- **Phase-based load management** - Prevents grid overload
+- **PV surplus charging** - Optimize solar power usage
+- **Dynamic load balancing** - Adjust charging based on household consumption
+
+### Configuration
+
+Add these settings to your configuration:
+
+```yaml
+# Enable openWB integration
+openwb_enabled: true
+openwb_mqtt_host: "192.168.1.50"  # IP of your openWB device
+openwb_mqtt_port: 1883
+openwb_mqtt_user: ""               # Optional
+openwb_mqtt_password: ""           # Optional
+openwb_device_id: 8                # MQTT counter device ID in openWB
+```
+
+### Sent Data
+
+The add-on automatically sends data to openWB in the correct format:
+
+**Required Topics (for load management):**
+- `openWB/set/mqtt/counter/8/get/power` - Total power in W
+- `openWB/set/mqtt/counter/8/get/imported` - Imported energy in Wh (auto-converted from kWh)
+- `openWB/set/mqtt/counter/8/get/exported` - Exported energy in Wh (auto-converted from kWh)
+- `openWB/set/mqtt/counter/8/get/currents` - Phase currents as JSON array `[L1, L2, L3]`
+
+**Optional Topics (for display):**
+- `openWB/set/mqtt/counter/8/get/frequency` - Grid frequency in Hz
+- `openWB/set/mqtt/counter/8/get/voltages` - Phase voltages as JSON array
+- `openWB/set/mqtt/counter/8/get/powers` - Phase powers as JSON array
+
+### Features
+
+- ✅ **Automatic format conversion** - kWh → Wh, arrays as JSON
+- ✅ **Dual MQTT connections** - Independent connections to HA and openWB
+- ✅ **Configurable device ID** - Support for multiple counters
+- ✅ **Standards compliant** - Follows openWB MQTT specification
+
+### openWB Setup
+
+1. Log into your openWB web interface
+2. Go to **Configuration → Counter → MQTT**
+3. Enable MQTT counter module
+4. Set device ID to `8` (or match your add-on configuration)
+5. Save configuration
+
+For detailed documentation, see [DOCS.md](DOCS.md#openwb-integration-settings).
 
 ## Troubleshooting
 

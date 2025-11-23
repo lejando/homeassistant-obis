@@ -5,6 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-11-23
+
+### Added
+- **openWB Integration** - Direct integration with openWB (Open Wallbox) for EV charging control
+  - Dual MQTT support: Send data to Home Assistant AND openWB simultaneously
+  - Two independent MQTT client connections running in parallel
+  - Automatic format conversion for openWB requirements
+  - Configuration options:
+    - `openwb_enabled` - Enable/disable openWB integration
+    - `openwb_mqtt_host` - openWB MQTT broker hostname/IP
+    - `openwb_mqtt_port` - openWB MQTT broker port
+    - `openwb_mqtt_user` - Optional authentication username
+    - `openwb_mqtt_password` - Optional authentication password
+    - `openwb_device_id` - Counter device ID in openWB (default: 8)
+
+### Features
+- **openWB MQTT Topics** - Automatic publishing to openWB-specific topics:
+  - `openWB/set/mqtt/counter/{id}/get/power` - Total power in W
+  - `openWB/set/mqtt/counter/{id}/get/imported` - Imported energy in Wh
+  - `openWB/set/mqtt/counter/{id}/get/exported` - Exported energy in Wh
+  - `openWB/set/mqtt/counter/{id}/get/currents` - Phase currents as JSON array
+  - `openWB/set/mqtt/counter/{id}/get/frequency` - Grid frequency in Hz
+  - `openWB/set/mqtt/counter/{id}/get/voltages` - Phase voltages as JSON array
+  - `openWB/set/mqtt/counter/{id}/get/powers` - Phase powers as JSON array
+- **Automatic data conversion**:
+  - Energy values: kWh → Wh (multiply by 1000)
+  - Phase data: Formatted as JSON arrays `[L1, L2, L3]`
+  - Decimal format: International format with decimal point
+  - Retain flag: All topics published with `retain=true`
+- **Phase-based load management** - Supports openWB's intelligent charging control
+- **Independent MQTT connections** - Home Assistant and openWB operate independently
+
+### Documentation
+- Comprehensive openWB integration guide in DOCS.md
+  - What is openWB and use cases
+  - Detailed configuration parameter descriptions
+  - MQTT topic mapping tables
+  - OBIS code to openWB topic conversion
+  - Configuration examples (basic, with auth, multi-counter)
+  - Troubleshooting guide for openWB integration
+  - Setup instructions for openWB web interface
+- Updated README.md with openWB integration section
+  - Quick start configuration
+  - Feature overview
+  - Setup instructions
+- Added translations for openWB configuration fields (English & German)
+  - Detailed field descriptions in configuration UI
+  - Contextual help for all openWB parameters
+
+### Technical Details
+- Second MQTT client instance (`openwb_client`) with independent connection management
+- Connection callbacks for monitoring openWB MQTT status
+- Automatic reconnection handling for both MQTT connections
+- Proper cleanup on shutdown for both clients
+- Logging of all openWB publish operations
+
+### Use Cases
+This update enables:
+- **EV Charging Control** - Use your electricity meter for intelligent wallbox control
+- **PV Surplus Charging** - Optimize solar power usage for EV charging
+- **Grid Load Management** - Prevent overload with phase-based charging control
+- **Home Energy Monitoring** - Track total household consumption including EV charging
+
 ## [1.1.1] - 2025-11-23
 
 ### Added
@@ -96,6 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configurable poll interval
 - Adjustable log level
 
+[1.2.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.0
 [1.1.1]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.1.1
 [1.1.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.1.0
 [1.0.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.0.0

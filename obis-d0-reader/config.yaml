@@ -1,5 +1,5 @@
 name: "OBIS D0 Reader"
-version: "1.1.1"
+version: "1.2.0"
 slug: obis_d0_reader
 description: "Reads OBIS D0 electricity meters via ser2net and sends data to MQTT"
 arch:
@@ -104,6 +104,37 @@ options:
   mqtt_custom_topics: {}
 
   # ═══════════════════════════════════════════════════════════════════════════
+  # openWB Integration Settings
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Configure data forwarding to openWB (Open Wallbox) for EV charging control
+
+  # Enable/disable openWB MQTT forwarding
+  # Set to true if you want to send meter data to an openWB wallbox system
+  openwb_enabled: false
+
+  # openWB MQTT broker hostname or IP address
+  # This is usually the IP address of your openWB device
+  # Examples: "192.168.1.50", "openwb.local"
+  openwb_mqtt_host: "192.168.1.50"
+
+  # openWB MQTT broker port
+  # Default: 1883 (unencrypted)
+  openwb_mqtt_port: 1883
+
+  # openWB MQTT username (leave empty if no authentication required)
+  # Most openWB installations don't require authentication
+  openwb_mqtt_user: ""
+
+  # openWB MQTT password (leave empty if no authentication required)
+  openwb_mqtt_password: ""
+
+  # openWB device ID for the counter
+  # This is the device number used in openWB topics
+  # Default: 8 (MQTT module counter)
+  # Topics will be: openWB/set/mqtt/counter/{device_id}/get/...
+  openwb_device_id: 8
+
+  # ═══════════════════════════════════════════════════════════════════════════
   # Meter Settings
   # ═══════════════════════════════════════════════════════════════════════════
 
@@ -149,6 +180,13 @@ schema:
   mqtt_discovery: bool
   mqtt_discovery_prefix: str
   mqtt_topic_mode: list(auto|custom)
+  mqtt_custom_topics: match(^$)|match(.*)?
+  openwb_enabled: bool
+  openwb_mqtt_host: str
+  openwb_mqtt_port: int
+  openwb_mqtt_user: str?
+  openwb_mqtt_password: password?
+  openwb_device_id: int
   meter_name: str
   poll_interval: int(1,60)
   log_level: list(debug|info|warning|error)

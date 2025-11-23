@@ -84,6 +84,48 @@ configuration:
       Source can be OBIS code (e.g., "1-0:16.7.0*255") or sensor name (e.g., "power_total").
       See DOCS for detailed examples and available sensor names.
 
+  openwb_enabled:
+    name: Enable openWB Integration
+    description: >-
+      Enable or disable data forwarding to openWB (Open Wallbox) for EV charging control.
+      When enabled, meter data will be sent to a second MQTT broker used by your openWB wallbox.
+      This allows openWB to use your electricity meter for phase-based load management.
+
+  openwb_mqtt_host:
+    name: openWB MQTT Broker Host
+    description: >-
+      Hostname or IP address of your openWB MQTT broker.
+      This is usually the IP address of your openWB device.
+      Example: 192.168.1.50, openwb.local
+
+  openwb_mqtt_port:
+    name: openWB MQTT Broker Port
+    description: >-
+      Port number of your openWB MQTT broker.
+      Default: 1883 (unencrypted).
+      Most openWB installations use the default port.
+
+  openwb_mqtt_user:
+    name: openWB MQTT Username
+    description: >-
+      Username for openWB MQTT broker authentication.
+      Leave empty if your openWB MQTT broker doesn't require authentication.
+      Most openWB installations don't require authentication.
+
+  openwb_mqtt_password:
+    name: openWB MQTT Password
+    description: >-
+      Password for openWB MQTT broker authentication.
+      Leave empty if your openWB MQTT broker doesn't require authentication.
+
+  openwb_device_id:
+    name: openWB Device ID
+    description: >-
+      Device ID for the counter module in openWB.
+      This number is used in the MQTT topics: openWB/set/mqtt/counter/{device_id}/get/...
+      Default: 8 (standard MQTT module counter).
+      Check your openWB configuration if you're using a different ID.
+
   meter_name:
     name: Meter Name
     description: >-

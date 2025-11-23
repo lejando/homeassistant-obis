@@ -84,6 +84,48 @@ configuration:
       Quelle kann OBIS-Code (z.B. "1-0:16.7.0*255") oder Sensorname (z.B. "power_total") sein.
       Siehe DOCS für detaillierte Beispiele und verfügbare Sensornamen.
 
+  openwb_enabled:
+    name: openWB Integration aktivieren
+    description: >-
+      Datenweiterleitung an openWB (Open Wallbox) für Elektroauto-Ladesteuerung aktivieren oder deaktivieren.
+      Wenn aktiviert, werden Zählerdaten an einen zweiten MQTT Broker gesendet, der von Ihrer openWB Wallbox verwendet wird.
+      Dies ermöglicht openWB die Nutzung Ihres Stromzählers für phasenbasiertes Lastmanagement.
+
+  openwb_mqtt_host:
+    name: openWB MQTT Broker Host
+    description: >-
+      Hostname oder IP-Adresse Ihres openWB MQTT Brokers.
+      Dies ist normalerweise die IP-Adresse Ihres openWB-Geräts.
+      Beispiel: 192.168.1.50, openwb.local
+
+  openwb_mqtt_port:
+    name: openWB MQTT Broker Port
+    description: >-
+      Port-Nummer Ihres openWB MQTT Brokers.
+      Standard: 1883 (unverschlüsselt).
+      Die meisten openWB-Installationen verwenden den Standard-Port.
+
+  openwb_mqtt_user:
+    name: openWB MQTT Benutzername
+    description: >-
+      Benutzername für openWB MQTT Broker Authentifizierung.
+      Leer lassen, wenn Ihr openWB MQTT Broker keine Authentifizierung benötigt.
+      Die meisten openWB-Installationen benötigen keine Authentifizierung.
+
+  openwb_mqtt_password:
+    name: openWB MQTT Passwort
+    description: >-
+      Passwort für openWB MQTT Broker Authentifizierung.
+      Leer lassen, wenn Ihr openWB MQTT Broker keine Authentifizierung benötigt.
+
+  openwb_device_id:
+    name: openWB Geräte-ID
+    description: >-
+      Geräte-ID für das Counter-Modul in openWB.
+      Diese Nummer wird in den MQTT-Topics verwendet: openWB/set/mqtt/counter/{device_id}/get/...
+      Standard: 8 (Standard-MQTT-Modul-Counter).
+      Prüfen Sie Ihre openWB-Konfiguration, wenn Sie eine andere ID verwenden.
+
   meter_name:
     name: Zählername
     description: >-

@@ -50,6 +50,12 @@ class Config:
     mqtt_discovery_prefix: str
     mqtt_topic_mode: str
     mqtt_custom_topics: Dict[str, str]
+    openwb_enabled: bool
+    openwb_mqtt_host: str
+    openwb_mqtt_port: int
+    openwb_mqtt_user: str
+    openwb_mqtt_password: str
+    openwb_device_id: int
     meter_name: str
     poll_interval: int
     log_level: str
@@ -61,7 +67,9 @@ class OBISReader:
         self.config = config
         self.logger = self._setup_logging()
         self.mqtt_client: Optional[mqtt.Client] = None
+        self.openwb_client: Optional[mqtt.Client] = None
         self.connected = False
+        self.openwb_connected = False
         self.last_values: Dict[str, Any] = {}
 
     def _setup_logging(self) -> logging.Logger:
@@ -186,6 +194,44 @@ class OBISReader:
         self.logger.warning("MQTT-Verbindung getrennt")
         self.connected = False
 
+    def setup_openwb_mqtt(self):
+        """openWB MQTT-Client initialisieren"""
+        if not self.config.openwb_enabled:
+            self.logger.info("openWB ist deaktiviert")
+            return
+
+        try:
+            self.openwb_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id="obis_openwb")
+
+            if self.config.openwb_mqtt_user and self.config.openwb_mqtt_password:
+                self.openwb_client.username_pw_set(
+                    self.config.openwb_mqtt_user,
+                    self.config.openwb_mqtt_password
+                )
+
+            self.openwb_client.on_connect = self._on_openwb_connect
+            self.openwb_client.on_disconnect = self._on_openwb_disconnect
+
+            self.logger.info(f"Verbinde zu openWB MQTT Broker {self.config.openwb_mqtt_host}:{self.config.openwb_mqtt_port}...")
+            self.openwb_client.connect(self.config.openwb_mqtt_host, self.config.openwb_mqtt_port, 60)
+            self.openwb_client.loop_start()
+
+        except Exception as e:
+            self.logger.error(f"openWB MQTT-Verbindung fehlgeschlagen: {e}")
+
+    def _on_openwb_connect(self, client, userdata, flags, rc):
+        """openWB MQTT Connect Callback"""
+        if rc == 0:
+            self.logger.info("openWB MQTT-Verbindung erfolgreich")
+            self.openwb_connected = True
+        else:
+            self.logger.error(f"openWB MQTT-Verbindung fehlgeschlagen mit Code {rc}")
+
+    def _on_openwb_disconnect(self, client, userdata, rc):
+        """openWB MQTT Disconnect Callback"""
+        self.logger.warning("openWB MQTT-Verbindung getrennt")
+        self.openwb_connected = False
+
     def publish_discovery(self):
         """Publiziert Home Assistant MQTT Discovery Nachrichten"""
         if not self.config.mqtt_discovery or not self.mqtt_client:
@@ -267,19 +313,111 @@ class OBISReader:
         json_topic = f"{self.config.mqtt_base_topic}/all"
         self.mqtt_client.publish(json_topic, json.dumps(self.last_values), retain=True)
 
+    def publish_to_openwb(self, values: Dict[str, str]):
+        """Publiziert Werte zu openWB MQTT"""
+        if not self.openwb_client or not self.openwb_connected:
+            return
+
+        device_id = self.config.openwb_device_id
+        base_topic = f"openWB/set/mqtt/counter/{device_id}/get"
+
+        try:
+            # PFLICHTFELDER
+            # Power (Bezugsleistung in Watt)
+            if '1-0:16.7.0*255' in values:
+                power = float(values['1-0:16.7.0*255'])
+                self.openwb_client.publish(f"{base_topic}/power", power, retain=True)
+                self.logger.debug(f"openWB: power = {power} W")
+
+            # Imported energy (Bezogene Energie in Wh)
+            if '1-0:1.8.0*255' in values:
+                # Umrechnung von kWh zu Wh
+                imported = float(values['1-0:1.8.0*255']) * 1000
+                self.openwb_client.publish(f"{base_topic}/imported", imported, retain=True)
+                self.logger.debug(f"openWB: imported = {imported} Wh")
+
+            # Exported energy (Eingespeiste Energie in Wh)
+            if '1-0:2.8.0*255' in values:
+                # Umrechnung von kWh zu Wh
+                exported = float(values['1-0:2.8.0*255']) * 1000
+                self.openwb_client.publish(f"{base_topic}/exported", exported, retain=True)
+                self.logger.debug(f"openWB: exported = {exported} Wh")
+
+            # Currents (Ströme je Phase in Array-Format)
+            currents = []
+            for phase_code in ['1-0:31.7.0*255', '1-0:51.7.0*255', '1-0:71.7.0*255']:
+                if phase_code in values:
+                    currents.append(float(values[phase_code]))
+                else:
+                    currents.append(0.0)
+
+            if len(currents) == 3:
+                self.openwb_client.publish(f"{base_topic}/currents", json.dumps(currents), retain=True)
+                self.logger.debug(f"openWB: currents = {currents} A")
+
+            # OPTIONALE FELDER (nur zur Anzeige)
+            # Frequency (Netzfrequenz in Hz)
+            if '1-0:14.7.0*255' in values:
+                frequency = float(values['1-0:14.7.0*255'])
+                self.openwb_client.publish(f"{base_topic}/frequency", frequency, retain=True)
+                self.logger.debug(f"openWB: frequency = {frequency} Hz")
+
+            # Voltages (Spannungen je Phase in Array-Format)
+            voltages = []
+            for phase_code in ['1-0:32.7.0*255', '1-0:52.7.0*255', '1-0:72.7.0*255']:
+                if phase_code in values:
+                    voltages.append(float(values[phase_code]))
+                else:
+                    voltages.append(0.0)
+
+            if len(voltages) == 3:
+                self.openwb_client.publish(f"{base_topic}/voltages", json.dumps(voltages), retain=True)
+                self.logger.debug(f"openWB: voltages = {voltages} V")
+
+            # Powers (Leistungen je Phase in Array-Format)
+            powers = []
+            for phase_code in ['1-0:36.7.0*255', '1-0:56.7.0*255', '1-0:76.7.0*255']:
+                if phase_code in values:
+                    powers.append(float(values[phase_code]))
+                else:
+                    powers.append(0.0)
+
+            if len(powers) == 3:
+                self.openwb_client.publish(f"{base_topic}/powers", json.dumps(powers), retain=True)
+                self.logger.debug(f"openWB: powers = {powers} W")
+
+            # Power factors (Leistungsfaktoren) - falls verfügbar
+            # Hinweis: Die meisten D0-Zähler liefern keine Leistungsfaktoren
+            # Falls nicht verfügbar, können wir sie aus P, U und I berechnen oder weglassen
+
+            self.logger.info(f"openWB: Daten erfolgreich publiziert zu Device {device_id}")
+
+        except Exception as e:
+            self.logger.error(f"Fehler beim Publizieren zu openWB: {e}")
+
     def run(self):
         """Hauptschleife"""
         self.logger.info("OBIS D0 Reader gestartet")
 
-        # MQTT Setup
+        # MQTT Setup für Home Assistant
         self.setup_mqtt()
 
-        # Warte auf MQTT-Verbindung
+        # MQTT Setup für openWB
+        self.setup_openwb_mqtt()
+
+        # Warte auf MQTT-Verbindungen
         if self.config.mqtt_enabled:
             for i in range(10):
                 if self.connected:
                     break
-                self.logger.info("Warte auf MQTT-Verbindung...")
+                self.logger.info("Warte auf Home Assistant MQTT-Verbindung...")
+                time.sleep(1)
+
+        if self.config.openwb_enabled:
+            for i in range(10):
+                if self.openwb_connected:
+                    break
+                self.logger.info("Warte auf openWB MQTT-Verbindung...")
                 time.sleep(1)
 
         # Hauptschleife
@@ -309,6 +447,10 @@ class OBISReader:
                         if self.config.mqtt_enabled:
                             self.publish_values(values)
 
+                        # Werte zu openWB publizieren
+                        if self.config.openwb_enabled:
+                            self.publish_to_openwb(values)
+
                         # Log einige Werte
                         if '1-0:16.7.0*255' in values:
                             self.logger.info(f"Aktuelle Leistung: {values['1-0:16.7.0*255']} W")
@@ -332,6 +474,10 @@ class OBISReader:
             self.mqtt_client.loop_stop()
             self.mqtt_client.disconnect()
 
+        if self.openwb_client:
+            self.openwb_client.loop_stop()
+            self.openwb_client.disconnect()
+
 def load_config() -> Config:
     """Lädt Konfiguration aus /data/options.json (Home Assistant Add-on)"""
     try:
@@ -351,6 +497,12 @@ def load_config() -> Config:
             mqtt_discovery_prefix=options.get('mqtt_discovery_prefix', 'homeassistant'),
             mqtt_topic_mode=options.get('mqtt_topic_mode', 'auto'),
             mqtt_custom_topics=options.get('mqtt_custom_topics', {}),
+            openwb_enabled=options.get('openwb_enabled', False),
+            openwb_mqtt_host=options.get('openwb_mqtt_host', '192.168.1.50'),
+            openwb_mqtt_port=options.get('openwb_mqtt_port', 1883),
+            openwb_mqtt_user=options.get('openwb_mqtt_user', ''),
+            openwb_mqtt_password=options.get('openwb_mqtt_password', ''),
+            openwb_device_id=options.get('openwb_device_id', 8),
             meter_name=options.get('meter_name', 'easyMeter'),
             poll_interval=options.get('poll_interval', 2),
             log_level=options.get('log_level', 'info'),
