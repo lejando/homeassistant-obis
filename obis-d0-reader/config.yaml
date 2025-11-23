@@ -1,5 +1,5 @@
 name: "OBIS D0 Reader"
-version: "1.2.0"
+version: "1.2.1"
 slug: obis_d0_reader
 description: "Reads OBIS D0 electricity meters via ser2net and sends data to MQTT"
 arch:
@@ -180,7 +180,6 @@ schema:
   mqtt_discovery: bool
   mqtt_discovery_prefix: str
   mqtt_topic_mode: list(auto|custom)
-  mqtt_custom_topics: match(^$)|match(.*)?
   openwb_enabled: bool
   openwb_mqtt_host: str
   openwb_mqtt_port: int
