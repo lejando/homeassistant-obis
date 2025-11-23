@@ -166,7 +166,7 @@ homeassistant-obis/
 │   └── CHANGELOG.md        # Versionshistorie
 ├── INSTALL.md              # Installations-Anleitung
 ├── LICENSE                 # MIT Lizenz
-├── repository.json         # Add-on Repository Definition
+├── repository.yaml         # Add-on Repository Definition
 └── README.md               # Dieses README
 ```
 
