@@ -1,0 +1,110 @@
+configuration:
+  tcp_host:
+    name: TCP Host
+    description: >-
+      IP address or hostname of your ser2net server (Raspberry Pi with IR read head).
+      Find it by running 'hostname -I' on your Raspberry Pi.
+      Test connection: telnet YOUR_IP 3000
+
+  tcp_port:
+    name: TCP Port
+    description: >-
+      TCP port where ser2net is listening.
+      Check your ser2net configuration file to find the correct port number.
+      Default is usually 3000.
+
+  mqtt_enabled:
+    name: Enable MQTT
+    description: >-
+      Enable or disable MQTT publishing.
+      Set to false only for testing TCP connection without MQTT.
+
+  mqtt_host:
+    name: MQTT Broker Host
+    description: >-
+      Hostname or IP address of your MQTT broker.
+      Use 'core-mosquitto' if you're using the Mosquitto broker add-on in Home Assistant.
+      Otherwise enter the IP address or hostname of your MQTT broker.
+
+  mqtt_port:
+    name: MQTT Broker Port
+    description: >-
+      Port number of your MQTT broker.
+      Default: 1883 (unencrypted), 8883 (SSL/TLS).
+      The Mosquitto add-on uses port 1883 by default.
+
+  mqtt_user:
+    name: MQTT Username
+    description: >-
+      Username for MQTT broker authentication.
+      Leave empty if your MQTT broker doesn't require authentication.
+      The default Mosquitto add-on doesn't require authentication when accessed locally.
+
+  mqtt_password:
+    name: MQTT Password
+    description: >-
+      Password for MQTT broker authentication.
+      Leave empty if your MQTT broker doesn't require authentication.
+
+  mqtt_base_topic:
+    name: MQTT Base Topic
+    description: >-
+      Base MQTT topic for all sensor data.
+      Sensor data will be published to: {base_topic}/{sensor_name}/state
+      Example: homeassistant/sensor/obis/power_total/state
+
+  mqtt_discovery:
+    name: Enable MQTT Auto-Discovery
+    description: >-
+      Enable MQTT Auto-Discovery for Home Assistant.
+      When enabled, sensors automatically appear in Home Assistant without manual configuration.
+      Go to Settings → Devices & Services → MQTT to see your meter device.
+
+  mqtt_discovery_prefix:
+    name: MQTT Discovery Prefix
+    description: >-
+      MQTT discovery prefix used by Home Assistant.
+      This must match your Home Assistant MQTT integration configuration.
+      Default Home Assistant value is 'homeassistant'.
+      Verify in Settings → Devices & Services → MQTT → Configure.
+
+  mqtt_topic_mode:
+    name: Topic Mode
+    description: >-
+      Controls how MQTT topics are generated.
+      'auto' = Automatic topic generation (recommended for Home Assistant).
+      'custom' = Define custom topics for each sensor (for advanced users integrating with Node-RED, Grafana, etc.).
+
+  mqtt_custom_topics:
+    name: Custom MQTT Topics
+    description: >-
+      Custom MQTT topic mappings for individual sensors.
+      Only used when Topic Mode is set to 'custom'.
+      Format: "source_identifier": "target/topic"
+      Source can be OBIS code (e.g., "1-0:16.7.0*255") or sensor name (e.g., "power_total").
+      See DOCS for detailed examples and available sensor names.
+
+  meter_name:
+    name: Meter Name
+    description: >-
+      Friendly name for your electricity meter.
+      Used as device name in Home Assistant.
+      Sensor names will appear as: {meter_name} Power Total, {meter_name} Voltage L1, etc.
+      Use descriptive names like 'MainMeter', 'HouseMeter', or 'easyMeter'.
+
+  poll_interval:
+    name: Poll Interval
+    description: >-
+      How often to read data from the meter (in seconds).
+      Recommended: 2 seconds for real-time monitoring.
+      Higher values (10-60 seconds) reduce network traffic but may miss power spikes.
+      Energy Dashboard accuracy is not affected by polling interval.
+
+  log_level:
+    name: Log Level
+    description: >-
+      Log verbosity level.
+      'debug' = Most verbose, shows all operations (use for troubleshooting).
+      'info' = Normal operation, shows connections and updates (recommended).
+      'warning' = Only warnings and errors (production use).
+      'error' = Only critical failures.

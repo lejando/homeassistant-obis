@@ -1,0 +1,110 @@
+configuration:
+  tcp_host:
+    name: TCP Host
+    description: >-
+      IP-Adresse oder Hostname Ihres ser2net Servers (Raspberry Pi mit IR-Lesekopf).
+      Finden Sie es mit 'hostname -I' auf Ihrem Raspberry Pi heraus.
+      Verbindung testen: telnet IHRE_IP 3000
+
+  tcp_port:
+    name: TCP Port
+    description: >-
+      TCP-Port, auf dem ser2net lauscht.
+      Prüfen Sie Ihre ser2net-Konfigurationsdatei, um den korrekten Port zu finden.
+      Standard ist normalerweise 3000.
+
+  mqtt_enabled:
+    name: MQTT aktivieren
+    description: >-
+      MQTT-Veröffentlichung aktivieren oder deaktivieren.
+      Nur für Tests der TCP-Verbindung ohne MQTT auf 'false' setzen.
+
+  mqtt_host:
+    name: MQTT Broker Host
+    description: >-
+      Hostname oder IP-Adresse Ihres MQTT Brokers.
+      Verwenden Sie 'core-mosquitto', wenn Sie das Mosquitto Broker Add-on in Home Assistant nutzen.
+      Andernfalls geben Sie die IP-Adresse oder den Hostnamen Ihres MQTT Brokers ein.
+
+  mqtt_port:
+    name: MQTT Broker Port
+    description: >-
+      Port-Nummer Ihres MQTT Brokers.
+      Standard: 1883 (unverschlüsselt), 8883 (SSL/TLS).
+      Das Mosquitto Add-on verwendet standardmäßig Port 1883.
+
+  mqtt_user:
+    name: MQTT Benutzername
+    description: >-
+      Benutzername für MQTT Broker Authentifizierung.
+      Leer lassen, wenn Ihr MQTT Broker keine Authentifizierung benötigt.
+      Das Standard Mosquitto Add-on benötigt bei lokalem Zugriff keine Authentifizierung.
+
+  mqtt_password:
+    name: MQTT Passwort
+    description: >-
+      Passwort für MQTT Broker Authentifizierung.
+      Leer lassen, wenn Ihr MQTT Broker keine Authentifizierung benötigt.
+
+  mqtt_base_topic:
+    name: MQTT Basis-Topic
+    description: >-
+      Basis-MQTT-Topic für alle Sensordaten.
+      Sensordaten werden veröffentlicht unter: {basis_topic}/{sensor_name}/state
+      Beispiel: homeassistant/sensor/obis/power_total/state
+
+  mqtt_discovery:
+    name: MQTT Auto-Discovery aktivieren
+    description: >-
+      MQTT Auto-Discovery für Home Assistant aktivieren.
+      Wenn aktiviert, erscheinen Sensoren automatisch in Home Assistant ohne manuelle Konfiguration.
+      Gehen Sie zu Einstellungen → Geräte & Dienste → MQTT, um Ihr Zählergerät zu sehen.
+
+  mqtt_discovery_prefix:
+    name: MQTT Discovery Präfix
+    description: >-
+      MQTT Discovery Präfix, das von Home Assistant verwendet wird.
+      Dies muss mit Ihrer Home Assistant MQTT-Integrationskonfiguration übereinstimmen.
+      Standard Home Assistant Wert ist 'homeassistant'.
+      Überprüfen unter Einstellungen → Geräte & Dienste → MQTT → Konfigurieren.
+
+  mqtt_topic_mode:
+    name: Topic-Modus
+    description: >-
+      Steuert, wie MQTT-Topics generiert werden.
+      'auto' = Automatische Topic-Generierung (empfohlen für Home Assistant).
+      'custom' = Benutzerdefinierte Topics für jeden Sensor definieren (für fortgeschrittene Benutzer mit Node-RED, Grafana, etc.).
+
+  mqtt_custom_topics:
+    name: Benutzerdefinierte MQTT Topics
+    description: >-
+      Benutzerdefinierte MQTT-Topic-Zuordnungen für einzelne Sensoren.
+      Wird nur verwendet, wenn Topic-Modus auf 'custom' gesetzt ist.
+      Format: "quell_identifier": "ziel/topic"
+      Quelle kann OBIS-Code (z.B. "1-0:16.7.0*255") oder Sensorname (z.B. "power_total") sein.
+      Siehe DOCS für detaillierte Beispiele und verfügbare Sensornamen.
+
+  meter_name:
+    name: Zählername
+    description: >-
+      Benutzerfreundlicher Name für Ihren Stromzähler.
+      Wird als Gerätename in Home Assistant verwendet.
+      Sensornamen erscheinen als: {zählername} Gesamtleistung, {zählername} Spannung L1, etc.
+      Verwenden Sie beschreibende Namen wie 'Hauptzähler', 'Hauszähler' oder 'easyMeter'.
+
+  poll_interval:
+    name: Abfrageintervall
+    description: >-
+      Wie oft Daten vom Zähler gelesen werden sollen (in Sekunden).
+      Empfohlen: 2 Sekunden für Echtzeit-Überwachung.
+      Höhere Werte (10-60 Sekunden) reduzieren Netzwerkverkehr, können aber Leistungsspitzen übersehen.
+      Die Genauigkeit des Energy Dashboard wird vom Abfrageintervall nicht beeinflusst.
+
+  log_level:
+    name: Log-Level
+    description: >-
+      Ausführlichkeit der Protokollierung.
+      'debug' = Am ausführlichsten, zeigt alle Operationen (für Fehlersuche).
+      'info' = Normaler Betrieb, zeigt Verbindungen und Updates (empfohlen).
+      'warning' = Nur Warnungen und Fehler (Produktivbetrieb).
+      'error' = Nur kritische Fehler.

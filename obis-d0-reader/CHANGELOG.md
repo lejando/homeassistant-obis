@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-11-23
+
+### Added
+- Translation files for configuration UI (en.yaml, de.yaml)
+  - Field descriptions appear below each configuration parameter in Home Assistant
+  - Multi-language support (English and German)
+  - Detailed help texts for all configuration options
+  - Contextual guidance and examples for each parameter
+
+### Improved
+- Configuration UI experience in Home Assistant
+- User guidance with inline help texts like professional add-ons
+- Better discoverability of configuration options
+- Reduced need to consult external documentation
+
 ## [1.1.0] - 2025-11-23
 
 ### Added
@@ -81,5 +96,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configurable poll interval
 - Adjustable log level
 
+[1.1.1]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.1.1
 [1.1.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.1.0
 [1.0.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.0.0
