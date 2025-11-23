@@ -161,7 +161,7 @@ class OBISReader:
             return
 
         try:
-            self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+            self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
             if self.config.mqtt_user and self.config.mqtt_password:
                 self.mqtt_client.username_pw_set(
@@ -201,7 +201,7 @@ class OBISReader:
             return
 
         try:
-            self.openwb_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id="obis_openwb")
+            self.openwb_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="obis_openwb")
 
             if self.config.openwb_mqtt_user and self.config.openwb_mqtt_password:
                 self.openwb_client.username_pw_set(
