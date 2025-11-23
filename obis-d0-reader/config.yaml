@@ -8,7 +8,7 @@ arch:
   - armhf
   - armv7
   - i386
-url: "https://github.com/yourusername/homeassistant-obis"
+url: "https://github.com/lejando/homeassistant-obis"
 startup: application
 boot: auto
 init: false

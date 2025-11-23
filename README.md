@@ -44,7 +44,7 @@ Fügen Sie dieses Repository zu Ihren Home Assistant Add-on Repositories hinzu:
 
 1. **Einstellungen** → **Add-ons** → **Add-on Store**
 2. Klicken Sie auf **⋮** (drei Punkte) → **Repositories**
-3. Fügen Sie hinzu: `https://github.com/yourusername/homeassistant-obis`
+3. Fügen Sie hinzu: `https://github.com/lejando/homeassistant-obis`
 4. Suchen Sie nach **"OBIS D0 Reader"** und installieren Sie es
 
 ### 2. Konfiguration
@@ -249,8 +249,8 @@ MIT License - siehe [LICENSE](LICENSE) Datei
 
 ## 📧 Support
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/homeassistant-obis/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/homeassistant-obis/discussions)
+- **Issues:** [GitHub Issues](https://github.com/lejando/homeassistant-obis/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/lejando/homeassistant-obis/discussions)
 
 ## 🔗 Links
 

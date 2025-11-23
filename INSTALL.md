@@ -236,7 +236,7 @@ Beenden mit: `Ctrl+]` dann `quit`
    - **Einstellungen** → **Add-ons** → **Add-on Store**
    - Klicken Sie auf **⋮** (drei Punkte oben rechts)
    - Wählen Sie **Repositories**
-   - Fügen Sie hinzu: `https://github.com/IHR-USERNAME/homeassistant-obis`
+   - Fügen Sie hinzu: `https://github.com/lejando/homeassistant-obis`
    - Klicken Sie auf **Hinzufügen**
 
 **Option B: Lokale Installation**

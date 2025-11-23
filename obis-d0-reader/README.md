@@ -52,7 +52,7 @@ Das Add-on erkennt und publiziert automatisch:
 4. Wählen Sie **Repositories**
 5. Fügen Sie diese URL hinzu:
    ```
-   https://github.com/IhrUsername/homeassistant-obis
+   https://github.com/lejando/homeassistant-obis
    ```
 
 ### 2. Add-on installieren

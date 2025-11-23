@@ -49,4 +49,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configurable poll interval
 - Adjustable log level
 
-[1.0.0]: https://github.com/yourusername/homeassistant-obis/releases/tag/v1.0.0
+[1.0.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.0.0
