@@ -31,6 +31,10 @@ OBIS_CODES = {
     '1-0:51.7.0*255': {'name': 'current_l2', 'unit': 'A', 'device_class': 'current', 'state_class': 'measurement'},
     '1-0:71.7.0*255': {'name': 'current_l3', 'unit': 'A', 'device_class': 'current', 'state_class': 'measurement'},
     '1-0:14.7.0*255': {'name': 'frequency', 'unit': 'Hz', 'device_class': 'frequency', 'state_class': 'measurement'},
+    '1-0:13.7.0*255': {'name': 'power_factor', 'unit': '', 'device_class': 'power_factor', 'state_class': 'measurement'},
+    '1-0:33.7.0*255': {'name': 'power_factor_l1', 'unit': '', 'device_class': 'power_factor', 'state_class': 'measurement'},
+    '1-0:53.7.0*255': {'name': 'power_factor_l2', 'unit': '', 'device_class': 'power_factor', 'state_class': 'measurement'},
+    '1-0:73.7.0*255': {'name': 'power_factor_l3', 'unit': '', 'device_class': 'power_factor', 'state_class': 'measurement'},
     '1-0:96.5.0*255': {'name': 'device_status', 'unit': '', 'device_class': None, 'state_class': None},
     '0-0:96.8.0*255': {'name': 'operating_time', 'unit': '', 'device_class': None, 'state_class': None},
 }
@@ -71,6 +75,7 @@ class OBISReader:
         self.connected = False
         self.openwb_connected = False
         self.last_values: Dict[str, Any] = {}
+        self.calculated_values: set = set()  # Track which values were calculated
 
     def _setup_logging(self) -> logging.Logger:
         """Logging konfigurieren"""
@@ -91,6 +96,9 @@ class OBISReader:
     def parse_d0_message(self, data: bytes) -> Dict[str, str]:
         """Parst D0-Protokoll Nachrichten"""
         try:
+            # Setze berechnete Werte zurück
+            self.calculated_values.clear()
+
             text = data.decode('ascii', errors='ignore')
 
             # Log Rohdaten im Debug-Modus
@@ -117,6 +125,9 @@ class OBISReader:
             # Berechne Ströme falls nicht vorhanden (I = P / U)
             self._calculate_missing_currents(values)
 
+            # Berechne Leistungsfaktoren falls nicht vorhanden (cos φ = P / (U * I))
+            self._calculate_power_factors(values)
+
             return values
 
         except Exception as e:
@@ -141,9 +152,82 @@ class OBISReader:
                     if voltage > 0:
                         current = power / voltage  # I = P / U
                         values[current_code] = f"{current:.2f}"
+                        self.calculated_values.add(current_code)  # Markiere als berechnet
                         self.logger.debug(f"Berechnet {phase} Strom: {current:.2f} A (aus {power:.2f} W / {voltage:.1f} V)")
                 except (ValueError, ZeroDivisionError) as e:
                     self.logger.debug(f"Konnte Strom für {phase} nicht berechnen: {e}")
+
+    def _calculate_power_factors(self, values: Dict[str, str]):
+        """Berechnet fehlende Leistungsfaktoren aus Leistung, Spannung und Strom (cos φ = P / (U * I))"""
+        # Phase-spezifische Leistungsfaktoren
+        phases = [
+            ('1-0:33.7.0*255', '1-0:36.7.0*255', '1-0:32.7.0*255', '1-0:31.7.0*255', 'L1'),  # pf, power, voltage, current
+            ('1-0:53.7.0*255', '1-0:56.7.0*255', '1-0:52.7.0*255', '1-0:51.7.0*255', 'L2'),
+            ('1-0:73.7.0*255', '1-0:76.7.0*255', '1-0:72.7.0*255', '1-0:71.7.0*255', 'L3'),
+        ]
+
+        for pf_code, power_code, voltage_code, current_code, phase in phases:
+            # Nur berechnen wenn:
+            # 1. Leistungsfaktor fehlt
+            # 2. Leistung, Spannung und Strom vorhanden sind
+            # 3. Keine der Werte wurde berechnet (um Zirkelschlüsse zu vermeiden)
+            if (pf_code not in values and
+                power_code in values and voltage_code in values and current_code in values and
+                current_code not in self.calculated_values and
+                power_code not in self.calculated_values and
+                voltage_code not in self.calculated_values):
+                try:
+                    power = float(values[power_code])  # in W (active power)
+                    voltage = float(values[voltage_code])  # in V
+                    current = float(values[current_code])  # in A
+
+                    if voltage > 0 and current > 0:
+                        apparent_power = voltage * current  # S = U * I (in VA)
+                        if apparent_power > 0:
+                            power_factor = power / apparent_power  # cos φ = P / S
+                            # Begrenze Leistungsfaktor auf Bereich [-1, 1]
+                            power_factor = max(-1.0, min(1.0, power_factor))
+                            values[pf_code] = f"{power_factor:.3f}"
+                            self.calculated_values.add(pf_code)  # Markiere als berechnet
+                            self.logger.debug(f"Berechnet {phase} Leistungsfaktor: {power_factor:.3f} (aus {power:.2f} W / ({voltage:.1f} V * {current:.2f} A))")
+                except (ValueError, ZeroDivisionError) as e:
+                    self.logger.debug(f"Konnte Leistungsfaktor für {phase} nicht berechnen: {e}")
+
+        # Gesamt-Leistungsfaktor
+        total_pf_code = '1-0:13.7.0*255'
+        total_power_code = '1-0:16.7.0*255'
+
+        if total_pf_code not in values and total_power_code in values and total_power_code not in self.calculated_values:
+            # Berechne Gesamt-Leistungsfaktor aus Phasen-Werten
+            # Nur wenn alle benötigten Werte gemessen (nicht berechnet) sind
+            try:
+                total_power = float(values[total_power_code])  # in W
+
+                # Summiere Scheinleistungen aller Phasen
+                total_apparent_power = 0.0
+                has_calculated_values = False
+                for phase_num in range(1, 4):
+                    voltage_code = f'1-0:{20*phase_num + 12}.7.0*255'
+                    current_code = f'1-0:{20*phase_num + 11}.7.0*255'
+
+                    if voltage_code in values and current_code in values:
+                        # Prüfe ob einer der Werte berechnet wurde
+                        if voltage_code in self.calculated_values or current_code in self.calculated_values:
+                            has_calculated_values = True
+                            break
+                        voltage = float(values[voltage_code])
+                        current = float(values[current_code])
+                        total_apparent_power += voltage * current
+
+                if not has_calculated_values and total_apparent_power > 0:
+                    total_power_factor = total_power / total_apparent_power
+                    # Begrenze Leistungsfaktor auf Bereich [-1, 1]
+                    total_power_factor = max(-1.0, min(1.0, total_power_factor))
+                    values[total_pf_code] = f"{total_power_factor:.3f}"
+                    self.calculated_values.add(total_pf_code)  # Markiere als berechnet
+                    self.logger.debug(f"Berechnet Gesamt-Leistungsfaktor: {total_power_factor:.3f} (aus {total_power:.2f} W / {total_apparent_power:.2f} VA)")
+            except (ValueError, ZeroDivisionError) as e:
+                self.logger.debug(f"Konnte Gesamt-Leistungsfaktor nicht berechnen: {e}")
 
     def connect_tcp(self) -> Optional[socket.socket]:
         """Verbindet zu ser2net via TCP"""
@@ -416,9 +500,17 @@ class OBISReader:
                 self.openwb_client.publish(f"{base_topic}/powers", json.dumps(powers), retain=True)
                 self.logger.debug(f"openWB: powers = {powers} W")
 
-            # Power factors (Leistungsfaktoren) - falls verfügbar
-            # Hinweis: Die meisten D0-Zähler liefern keine Leistungsfaktoren
-            # Falls nicht verfügbar, können wir sie aus P, U und I berechnen oder weglassen
+            # Power factors (Leistungsfaktoren) - jetzt berechnet falls verfügbar
+            power_factors = []
+            for phase_code in ['1-0:33.7.0*255', '1-0:53.7.0*255', '1-0:73.7.0*255']:
+                if phase_code in values:
+                    power_factors.append(float(values[phase_code]))
+                else:
+                    power_factors.append(1.0)  # Default: 1.0 (perfekter Leistungsfaktor)
+
+            if len(power_factors) == 3:
+                self.openwb_client.publish(f"{base_topic}/power_factors", json.dumps(power_factors), retain=True)
+                self.logger.debug(f"openWB: power_factors = {power_factors}")
 
             self.logger.info(f"openWB: Daten erfolgreich publiziert zu Device {device_id}")
 
