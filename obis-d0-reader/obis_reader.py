@@ -629,7 +629,7 @@ def load_config() -> Config:
             openwb_device_id=options.get('openwb_device_id', 8),
             meter_name=options.get('meter_name', 'easyMeter'),
             poll_interval=options.get('poll_interval', 2),
-            calculate_power_factor=options.get('calculate_power_factor', True),
+            calculate_power_factor=options.get('calculate_power_factor', False),
             log_level=options.get('log_level', 'info'),
         )
     except Exception as e:

@@ -158,9 +158,10 @@ options:
   # Power factor (cos φ) will be calculated from power, voltage, and current
   # using the formula: cos φ = P / (U × I)
   # Only calculates when all three values are measured by the meter (not calculated)
-  # Set to false if your meter already provides power factor values
+  # Set to true if you want to enable power factor calculation
+  # Leave false if your meter already provides power factor values
   # or if you don't need power factor sensors
-  calculate_power_factor: true
+  calculate_power_factor: false
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Logging Settings
