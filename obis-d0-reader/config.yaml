@@ -154,6 +154,14 @@ options:
   # Note: Energy Dashboard accuracy is not affected by polling interval
   poll_interval: 2
 
+  # Automatically calculate power factors when not provided by meter
+  # Power factor (cos φ) will be calculated from power, voltage, and current
+  # using the formula: cos φ = P / (U × I)
+  # Only calculates when all three values are measured by the meter (not calculated)
+  # Set to false if your meter already provides power factor values
+  # or if you don't need power factor sensors
+  calculate_power_factor: true
+
   # ═══════════════════════════════════════════════════════════════════════════
   # Logging Settings
   # ═══════════════════════════════════════════════════════════════════════════
@@ -188,6 +196,7 @@ schema:
   openwb_device_id: int
   meter_name: str
   poll_interval: int(1,60)
+  calculate_power_factor: bool
   log_level: list(debug|info|warning|error)
 
 services:

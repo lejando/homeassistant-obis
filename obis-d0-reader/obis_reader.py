@@ -62,6 +62,7 @@ class Config:
     openwb_device_id: int
     meter_name: str
     poll_interval: int
+    calculate_power_factor: bool
     log_level: str
 
 class OBISReader:
@@ -126,7 +127,8 @@ class OBISReader:
             self._calculate_missing_currents(values)
 
             # Berechne Leistungsfaktoren falls nicht vorhanden (cos φ = P / (U * I))
-            self._calculate_power_factors(values)
+            if self.config.calculate_power_factor:
+                self._calculate_power_factors(values)
 
             return values
 
@@ -627,6 +629,7 @@ def load_config() -> Config:
             openwb_device_id=options.get('openwb_device_id', 8),
             meter_name=options.get('meter_name', 'easyMeter'),
             poll_interval=options.get('poll_interval', 2),
+            calculate_power_factor=options.get('calculate_power_factor', True),
             log_level=options.get('log_level', 'info'),
         )
     except Exception as e:

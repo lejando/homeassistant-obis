@@ -142,6 +142,15 @@ configuration:
       Higher values (10-60 seconds) reduce network traffic but may miss power spikes.
       Energy Dashboard accuracy is not affected by polling interval.
 
+  calculate_power_factor:
+    name: Calculate Power Factor
+    description: >-
+      Automatically calculate power factor (cos φ) when not provided by your meter.
+      Power factor is calculated from measured power, voltage, and current using: cos φ = P / (U × I).
+      Only calculates when all three values are originally measured by the meter (not calculated).
+      Disable this if your meter already provides power factor values or if you don't need these sensors.
+      When enabled, power factor sensors will appear in Home Assistant and be sent to openWB.
+
   log_level:
     name: Log Level
     description: >-

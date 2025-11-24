@@ -142,6 +142,15 @@ configuration:
       Höhere Werte (10-60 Sekunden) reduzieren Netzwerkverkehr, können aber Leistungsspitzen übersehen.
       Die Genauigkeit des Energy Dashboard wird vom Abfrageintervall nicht beeinflusst.
 
+  calculate_power_factor:
+    name: Leistungsfaktor berechnen
+    description: >-
+      Leistungsfaktor (cos φ) automatisch berechnen, wenn er vom Zähler nicht bereitgestellt wird.
+      Der Leistungsfaktor wird aus gemessener Leistung, Spannung und Strom berechnet: cos φ = P / (U × I).
+      Berechnung erfolgt nur, wenn alle drei Werte ursprünglich vom Zähler gemessen wurden (nicht berechnet).
+      Deaktivieren Sie dies, wenn Ihr Zähler bereits Leistungsfaktor-Werte liefert oder Sie diese Sensoren nicht benötigen.
+      Wenn aktiviert, erscheinen Leistungsfaktor-Sensoren in Home Assistant und werden an openWB gesendet.
+
   log_level:
     name: Log-Level
     description: >-
