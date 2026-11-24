@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-11-24
+
+### Changed
+- Base image updated to Python 3.13 and Alpine 3.22
+  - Previously Python 3.11 and Alpine 3.18
+  - Applies to all architectures (aarch64, amd64, armhf, armv7, i386)
+
 ## [1.3.1] - 2025-11-23
 
 ### Fixed
@@ -216,6 +223,7 @@ This update enables:
 - Configurable poll interval
 - Adjustable log level
 
+[1.3.2]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.3.2
 [1.3.1]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.3.1
 [1.3.0]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.3.0
 [1.2.4]: https://github.com/lejando/homeassistant-obis/releases/tag/v1.2.4
